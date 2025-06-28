@@ -35,26 +35,38 @@
     let rewardContract, lsgContract;
 
     async function connectWallet() {
-      if (window.ethereum) {
-        provider = new ethers.providers.Web3Provider(window.ethereum);
-        await provider.send("eth_requestAccounts", []);
-        signer = provider.getSigner();
-        userAddress = await signer.getAddress();
-        document.getElementById("userAddress").innerText = userAddress;
+      if (typeof window.ethereum !== 'undefined') {
+        try {
+          provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+          await provider.send("eth_requestAccounts", []);
+          signer = provider.getSigner();
+          userAddress = await signer.getAddress();
+          document.getElementById("userAddress").innerText = userAddress;
 
-        const abi = await fetch(rewardAbiUrl).then(res => res.json());
-        rewardContract = new ethers.Contract(rewardContractAddress, abi, signer);
-
-        const erc20Abi = [{ "constant": true, "inputs": [{ "name": "_owner", "type": "address" }],
-          "name": "balanceOf", "outputs": [{ "name": "balance", "type": "uint256" }],
-          "type": "function" }];
-        lsgContract = new ethers.Contract(lsgTokenAddress, erc20Abi, provider);
-
-        updateInfo();
-        generateInviteLink();
+          await initContracts(signer, provider);
+          await updateInfo();
+          generateInviteLink();
+        } catch (error) {
+          alert("连接钱包失败: " + error.message);
+          console.error(error);
+        }
       } else {
-        alert("请使用支持以太坊的浏览器钱包（如 TP、Fluent、MetaMask）");
+        alert("未检测到支持的钱包，请使用 TP、Fluent 或 MetaMask 浏览器扩展！");
       }
+    }
+
+    async function initContracts(signer, provider) {
+      const abi = await fetch(rewardAbiUrl).then(res => res.json());
+      rewardContract = new ethers.Contract(rewardContractAddress, abi, signer);
+
+      const erc20Abi = [{
+        constant: true,
+        inputs: [{ name: "_owner", type: "address" }],
+        name: "balanceOf",
+        outputs: [{ name: "balance", type: "uint256" }],
+        type: "function"
+      }];
+      lsgContract = new ethers.Contract(lsgTokenAddress, erc20Abi, provider);
     }
 
     async function updateInfo() {
