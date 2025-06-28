@@ -1,0 +1,103 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>养牛链游 - LSG 奖励系统</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
+    .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    button { padding: 10px 20px; margin: 5px 0; font-size: 16px; }
+    .info { margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🐮 LSG 奖励系统</h2>
+    <button onclick="connectWallet()">连接钱包</button>
+    <div class="info">
+      <p>地址: <span id="userAddress">未连接</span></p>
+      <p>LSG 余额: <span id="balance">-</span></p>
+      <p>注册状态: <span id="registerStatus">-</span></p>
+    </div>
+    <button onclick="register()">注册（送10 LSG）</button>
+    <button onclick="claimDaily()">每日签到（领1 LSG）</button>
+    <p>邀请链接: <a id="inviteLink" href="#">生成中...</a></p>
+  </div>
+
+  <script>
+    const rewardContractAddress = "0xe7a2f227174066eba05ea551e12a3a02d308105b";
+    const lsgTokenAddress = "0xc926c05eac192418a3a29e41c38197dffcd9b4ab";
+    const rewardAbiUrl = "LSGRewardDistributor_ABI.json";
+
+    let provider, signer, userAddress;
+    let rewardContract, lsgContract;
+
+    async function connectWallet() {
+      if (window.ethereum) {
+        provider = new ethers.providers.Web3Provider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        signer = provider.getSigner();
+        userAddress = await signer.getAddress();
+        document.getElementById("userAddress").innerText = userAddress;
+
+        const abi = await fetch(rewardAbiUrl).then(res => res.json());
+        rewardContract = new ethers.Contract(rewardContractAddress, abi, signer);
+
+        const erc20Abi = [{ "constant": true, "inputs": [{ "name": "_owner", "type": "address" }],
+          "name": "balanceOf", "outputs": [{ "name": "balance", "type": "uint256" }],
+          "type": "function" }];
+        lsgContract = new ethers.Contract(lsgTokenAddress, erc20Abi, provider);
+
+        updateInfo();
+        generateInviteLink();
+      } else {
+        alert("请使用支持以太坊的浏览器钱包（如 TP、Fluent、MetaMask）");
+      }
+    }
+
+    async function updateInfo() {
+      const balance = await lsgContract.balanceOf(userAddress);
+      document.getElementById("balance").innerText = ethers.utils.formatUnits(balance, 18);
+
+      const info = await rewardContract.getInfo(userAddress);
+      document.getElementById("registerStatus").innerText = info.isRegistered ? "已注册" : "未注册";
+    }
+
+    async function register() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const inviter = urlParams.get("inviter") || ethers.constants.AddressZero;
+      try {
+        const tx = await rewardContract.register(inviter);
+        await tx.wait();
+        alert("注册成功，已发放 10 LSG！");
+        updateInfo();
+      } catch (err) {
+        console.error(err);
+        alert("注册失败：" + err.message);
+      }
+    }
+
+    async function claimDaily() {
+      try {
+        const tx = await rewardContract.claimDailyReward();
+        await tx.wait();
+        alert("每日签到成功，已领取 1 LSG！");
+        updateInfo();
+      } catch (err) {
+        console.error(err);
+        alert("领取失败：" + err.message);
+      }
+    }
+
+    function generateInviteLink() {
+      const base = window.location.origin + window.location.pathname;
+      const link = `${base}?inviter=${userAddress}`;
+      const inviteEl = document.getElementById("inviteLink");
+      inviteEl.href = link;
+      inviteEl.innerText = link;
+    }
+  </script>
+</body>
+</html>
