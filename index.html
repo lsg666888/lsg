@@ -5,8 +5,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LSG 链游奖励系统</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"> </script>
-   <script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+  <script>
     async function updateInviteCount() {
       try {
         const count = await rewardContract.inviteCount(userAddress);
@@ -162,15 +162,7 @@
       }
     }
 
-    
     async function register() {
-      try {
-        const info = await rewardContract.getInfo(userAddress);
-        if (info[0]) {
-          showToast("您已注册过了");
-          return;
-        }
-    
       try {
         const inviter = new URLSearchParams(window.location.search).get("inviter") || ethers.constants.AddressZero;
         const tx = await rewardContract.register(inviter);
@@ -184,18 +176,7 @@
       }
     }
 
-    
     async function claimDaily() {
-      try {
-        const info = await rewardContract.getInfo(userAddress);
-        const nextClaimTime = info[2].toNumber() * 1000;
-        const now = new Date();
-        const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-        if (nextClaimTime > Date.now()) {
-          showToast("今天已领取，请明天再试");
-          return;
-        }
-    
       try {
         const tx = await rewardContract.claimDailyReward();
         await tx.wait();
