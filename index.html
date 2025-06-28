@@ -1,28 +1,77 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>养牛链游 - LSG 奖励系统</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>🐮 LSG 奖励系统</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
-    .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-    button { padding: 10px 20px; margin: 5px 0; font-size: 16px; }
-    .info { margin-top: 10px; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(to bottom, #fffbe6, #fce4ec);
+      padding: 20px;
+    }
+    .card {
+      max-width: 500px;
+      margin: auto;
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    h2 {
+      margin-top: 0;
+      font-size: 24px;
+      color: #ff4081;
+    }
+    button {
+      background-color: #ff4081;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 20px;
+      margin: 8px 0;
+      font-size: 16px;
+      width: 100%;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #e91e63;
+    }
+    .info p {
+      margin: 8px 0;
+      font-size: 14px;
+      color: #444;
+    }
+    a {
+      color: #007bff;
+      word-break: break-all;
+    }
+    .footer {
+      margin-top: 20px;
+      font-size: 12px;
+      color: #999;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>🐮 LSG 奖励系统</h2>
-    <button onclick="connectWallet()">连接钱包</button>
+  <div class="card">
+    <h2>LSG 链游奖励系统</h2>
+    <button onclick="connectWallet()">🔌 连接钱包</button>
     <div class="info">
-      <p>地址: <span id="userAddress">未连接</span></p>
+      <p>钱包地址: <span id="userAddress">未连接</span></p>
       <p>LSG 余额: <span id="balance">-</span></p>
-      <p>注册状态: <span id="registerStatus">-</span></p>
+      <p>注册状态: <span id="registerStatus">未知</span></p>
     </div>
-    <button onclick="register()">注册（送10 LSG）</button>
-    <button onclick="claimDaily()">每日签到（领1 LSG）</button>
-    <p>邀请链接: <a id="inviteLink" href="#">生成中...</a></p>
+    <button onclick="register()">🎁 注册领取 10 LSG</button>
+    <button onclick="claimDaily()">📅 每日签到 领取 1 LSG</button>
+    <p>我的邀请链接:</p>
+    <a id="inviteLink" href="#">生成中...</a>
+    <div class="footer">Powered by LSG on CFX eSpace</div>
   </div>
 
   <script>
@@ -34,60 +83,73 @@
     let rewardContract, lsgContract;
 
     async function connectWallet() {
-      if (typeof window.ethereum !== 'undefined') {
-        try {
-          provider = new ethers.providers.Web3Provider(window.ethereum, "any");
-          await provider.send("eth_requestAccounts", []);
-          signer = provider.getSigner();
-          userAddress = await signer.getAddress();
-          document.getElementById("userAddress").innerText = userAddress;
+      if (typeof window.ethereum === 'undefined') {
+        alert("请使用支持钱包的浏览器，如 TP、Fluent 或 MetaMask。");
+        return;
+      }
 
-          await initContracts(signer, provider);
-          await updateInfo();
-          generateInviteLink();
-        } catch (error) {
-          alert("连接钱包失败: " + error.message);
-          console.error(error);
-        }
-      } else {
-        alert("请安装 TP、Fluent 或 MetaMask 钱包插件！");
+      try {
+        provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+        await provider.send("eth_requestAccounts", []);
+        signer = provider.getSigner();
+        userAddress = await signer.getAddress();
+        document.getElementById("userAddress").innerText = userAddress;
+
+        const abi = await fetch(rewardAbiUrl).then(res => res.json());
+        rewardContract = new ethers.Contract(rewardContractAddress, abi, signer);
+
+        const erc20Abi = [{
+          constant: true,
+          inputs: [{ name: "_owner", type: "address" }],
+          name: "balanceOf",
+          outputs: [{ name: "balance", type: "uint256" }],
+          type: "function"
+        }];
+        lsgContract = new ethers.Contract(lsgTokenAddress, erc20Abi, provider);
+
+        await updateInfo();
+        generateInviteLink();
+      } catch (e) {
+        alert("连接钱包失败: " + e.message);
+        console.error(e);
       }
     }
 
-    async function initContracts(signer, provider) {
-      const abi = await fetch(rewardAbiUrl).then(res => res.json());
-      rewardContract = new ethers.Contract(rewardContractAddress, abi, signer);
-
-      const erc20Abi = [{constant:true,inputs:[{name:"_owner",type:"address"}],name:"balanceOf",outputs:[{name:"balance",type:"uint256"}],type:"function"}];
-      lsgContract = new ethers.Contract(lsgTokenAddress, erc20Abi, provider);
-    }
-
     async function updateInfo() {
-      const balance = await lsgContract.balanceOf(userAddress);
-      document.getElementById("balance").innerText = ethers.utils.formatUnits(balance, 18);
+      try {
+        const balance = await lsgContract.balanceOf(userAddress);
+        document.getElementById("balance").innerText = ethers.utils.formatUnits(balance, 18);
 
-      const info = await rewardContract.getInfo(userAddress);
-      document.getElementById("registerStatus").innerText = info.isRegistered ? "已注册" : "未注册";
+        const info = await rewardContract.getInfo(userAddress);
+        document.getElementById("registerStatus").innerText = info[0] ? "✅ 已注册" : "❌ 未注册";
+      } catch (e) {
+        document.getElementById("registerStatus").innerText = "读取失败";
+        console.error("getInfo失败", e);
+      }
     }
 
     async function register() {
-      const inviter = new URLSearchParams(window.location.search).get("inviter") || ethers.constants.AddressZero;
       try {
-        await (await rewardContract.register(inviter)).wait();
-        alert("注册成功，已发放 10 LSG！");
-        updateInfo();
-      } catch (err) {
-        alert("注册失败：" + err.message);
+        const inviter = new URLSearchParams(window.location.search).get("inviter") || ethers.constants.AddressZero;
+        const tx = await rewardContract.register(inviter);
+        await tx.wait();
+        alert("注册成功，奖励已发放！");
+        await updateInfo();
+      } catch (e) {
+        alert("注册失败: " + e.message);
+        console.error(e);
       }
     }
 
     async function claimDaily() {
       try {
-        await (await rewardContract.claimDailyReward()).wait();
-        alert("签到成功，得到 1 LSG！");
-        updateInfo();
-      } catch (err) {
-        alert("签到失败：" + err.message);
+        const tx = await rewardContract.claimDailyReward();
+        await tx.wait();
+        alert("每日签到成功！");
+        await updateInfo();
+      } catch (e) {
+        alert("领取失败: " + e.message);
+        console.error(e);
       }
     }
 
