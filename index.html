@@ -6,6 +6,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LSG 链游奖励系统</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+    async function updateInviteCount() {
+      try {
+        const count = await rewardContract.inviteCount(userAddress);
+        document.getElementById("inviteCount").innerText = count.toString();
+      } catch (e) {
+        document.getElementById("inviteCount").innerText = "读取失败";
+        console.error("邀请人数读取失败", e);
+      }
+    }
+    </script>
+    
   <style>
     body {
       margin: 0;
@@ -73,9 +84,10 @@
     <h2>LSG 链游奖励系统</h2>
     <button onclick="connectWallet()">🔌 连接钱包</button>
     <div class="info">
-      <p>我的钱包地址: <span id="userAddress">未连接</span></p>
+      <p>钱包地址: <span id="userAddress">未连接</span></p>
       <p>LSG 余额: <span id="balance">-</span></p>
       <p>注册状态: <span id="registerStatus">未知</span></p>
+       <p>我已邀请人数: <span id="inviteCount">-</span></p>
     </div>
     <button onclick="register()">🎁 注册领取 10 LSG</button>
     <button onclick="claimDaily()">📅 每日签到 领取 1 LSG</button>
@@ -129,6 +141,7 @@
         lsgContract = new ethers.Contract(lsgTokenAddress, erc20Abi, provider);
 
         await updateInfo();
+        await updateInviteCount();
         generateInviteLink();
       } catch (e) {
         showToast("连接钱包失败");
@@ -155,6 +168,7 @@
         await tx.wait();
         showToast("注册成功！");
         await updateInfo();
+        await updateInviteCount();
       } catch (e) {
         showToast("注册失败");
         console.error(e);
@@ -167,6 +181,7 @@
         await tx.wait();
         showToast("签到成功！");
         await updateInfo();
+        await updateInviteCount();
       } catch (e) {
         showToast("领取失败");
         console.error(e);
@@ -187,6 +202,17 @@
         showToast("复制失败！");
       });
     }
-  </script>
+  
+    async function updateInviteCount() {
+      try {
+        const count = await rewardContract.inviteCount(userAddress);
+        document.getElementById("inviteCount").innerText = count.toString();
+      } catch (e) {
+        document.getElementById("inviteCount").innerText = "读取失败";
+        console.error("邀请人数读取失败", e);
+      }
+    }
+    </script>
+    
 </body>
 </html>
