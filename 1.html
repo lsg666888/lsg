@@ -4277,45 +4277,46 @@
                 modal.show();
             }
             
-            // 购买农场按钮点击事件
-            document.getElementById('buyFarmBtn').addEventListener('click', function() {
-                if (!accounts.length) {
-                    showStatusModal('错误', '请先连接钱包');
+            // 购买农场按钮点击事件保持原样，使用真实钱包
+document.getElementById('buyFarmBtn').addEventListener('click', function() {
+    if (!accounts.length) {
+        showStatusModal('错误', '请先连接钱包');
+        return;
+    }
+    
+    showTransactionModal(
+        '购买农场',
+        `<p>确定要花费 <strong>60 GGG</strong> 购买一个新农场吗?</p>
+         <p class="text-info">将从您的真实钱包扣除</p>`,
+        async function() {
+            try {
+                const price = web3.utils.toWei('60', 'ether');
+                
+                // 检查真实GGG余额
+                const balance = await contracts.gggToken.methods.balanceOf(accounts[0]).call();
+                if (BigInt(balance) < BigInt(price)) {
+                    showStatusModal('错误', 'GGG余额不足');
                     return;
                 }
                 
-                showTransactionModal(
-                    '购买农场',
-                    `<p>确定要花费 <strong>60 GGG</strong> 购买一个新农场吗?</p>`,
-                    async function() {
-                        try {
-                            const price = web3.utils.toWei('60', 'ether');
-                            
-                            // 检查GGG余额
-                            const balance = await contracts.gggToken.methods.balanceOf(accounts[0]).call();
-                            if (BigInt(balance) < BigInt(price)) {
-                                showStatusModal('错误', 'GGG余额不足');
-                                return;
-                            }
-                            
-                            // 批准GGG代币
-                            await contracts.gggToken.methods.approve(contracts.farmNFT.address, price)
-                                .send({ from: accounts[0] });
-                            
-                            // 购买农场
-                            const tx = await contracts.farmNFT.methods.buyFarm(price)
-                                .send({ from: accounts[0] });
-                            
-                            showStatusModal('成功', '农场购买成功!');
-                            loadUserData();
-                            
-                        } catch (error) {
-                            console.error("购买农场失败:", error);
-                            showStatusModal('错误', '购买农场失败: ' + error.message);
-                        }
-                    }
-                );
-            });
+                // 批准GGG代币
+                await contracts.gggToken.methods.approve(contracts.farmNFT.address, price)
+                    .send({ from: accounts[0] });
+                
+                // 购买农场
+                const tx = await contracts.farmNFT.methods.buyFarm(price)
+                    .send({ from: accounts[0] });
+                
+                showStatusModal('成功', '农场购买成功!');
+                loadUserData();
+                
+            } catch (error) {
+                console.error("购买农场失败:", error);
+                showStatusModal('错误', '购买农场失败: ' + error.message);
+            }
+        }
+    );
+});
             
             // 购买普通奶牛按钮点击事件
             document.getElementById('buyRegularCowBtn').addEventListener('click', function() {
