@@ -152,6 +152,9 @@
                 </ul>
                 <div class="d-flex align-items-center">
                     <span id="walletAddress" class="text-white me-3 d-none"></span>
+			<button class="btn btn-primary" id="depositBtn">
+    <i class="fas fa-arrow-down me-2"></i>充值到虚拟钱包
+</button>
                     <button id="connectWallet" class="btn connect-wallet-btn">
                         <i class="fas fa-wallet me-2"></i>连接钱包
                     </button>
@@ -4678,7 +4681,83 @@ document.getElementById('fertilizeBtn').addEventListener('click', function() {
                 tooltip.show();
                 setTimeout(() => tooltip.hide(), 1000);
             });
-            
+		
+// 充值功能实现
+document.getElementById('depositBtn').addEventListener('click', function() {
+    if (!accounts.length) {
+        showStatusModal('错误', '请先连接钱包');
+        return;
+    }
+    
+    showTransactionModal(
+        '充值到虚拟钱包',
+        `<div class="mb-3">
+            <label for="depositAmount" class="form-label">充值金额</label>
+            <input type="number" class="form-control" id="depositAmount" min="1">
+        </div>
+        <div class="mb-3">
+            <label for="depositToken" class="form-label">代币类型</label>
+            <select class="form-select" id="depositToken">
+                <option value="GGG">GGG</option>
+                <option value="FGG">FGG</option>
+            </select>
+        </div>`,
+        async function() {
+            try {
+                const amount = document.getElementById('depositAmount').value;
+                const token = document.getElementById('depositToken').value;
+                
+                if (!amount || parseFloat(amount) <= 0) {
+                    showStatusModal('错误', '请输入有效的充值金额');
+                    return;
+                }
+                
+                const amountInWei = web3.utils.toWei(amount, 'ether');
+                
+                if (token === 'GGG') {
+                    // 检查GGG余额
+                    const balance = await contracts.gggToken.methods.balanceOf(accounts[0]).call();
+                    if (BigInt(balance) < BigInt(amountInWei)) {
+                        showStatusModal('错误', 'GGG余额不足');
+                        return;
+                    }
+                    
+                    // 批准GGG代币
+                    await contracts.gggToken.methods.approve(contracts.rewardSystem.address, amountInWei)
+                        .send({ from: accounts[0] });
+                    
+                    // 充值到虚拟钱包
+                    await contracts.rewardSystem.methods.depositToVirtualWallet(amountInWei, "GGG")
+                        .send({ from: accounts[0] });
+                    
+                } else {
+                    // 检查FGG余额
+                    const balance = await contracts.fggToken.methods.balanceOf(accounts[0]).call();
+                    if (BigInt(balance) < BigInt(amountInWei)) {
+                        showStatusModal('错误', 'FGG余额不足');
+                        return;
+                    }
+                    
+                    // 批准FGG代币
+                    await contracts.fggToken.methods.approve(contracts.rewardSystem.address, amountInWei)
+                        .send({ from: accounts[0] });
+                    
+                    // 充值到虚拟钱包
+                    await contracts.rewardSystem.methods.depositToVirtualWallet(amountInWei, "FGG")
+                        .send({ from: accounts[0] });
+                }
+                
+                showStatusModal('成功', `成功充值 ${amount} ${token} 到虚拟钱包!`);
+                loadUserData();
+                
+            } catch (error) {
+                console.error("充值失败:", error);
+                showStatusModal('错误', '充值失败: ' + error.message);
+            }
+        }
+    );
+});
+		
             // 提现按钮点击事件
             document.getElementById('withdrawBtn').addEventListener('click', function() {
                 if (!accounts.length) {
