@@ -4014,54 +4014,76 @@
                 }
             };
             
-            // 连接钱包按钮点击事件
-            document.getElementById('connectWallet').addEventListener('click', async function() {
-                if (typeof window.conflux !== 'undefined') {
-                    try {
-                        // 请求账户访问
-                        accounts = await window.conflux.request({ method: 'cfx_requestAccounts' });
-                        web3 = new Web3(window.conflux);
-                        
-                        // 初始化合约实例
-                        contracts.gggToken = new web3.eth.Contract(contractConfig.gggToken.abi, contractConfig.gggToken.address);
-                        contracts.fggToken = new web3.eth.Contract(contractConfig.fggToken.abi, contractConfig.fggToken.address);
-                        contracts.farmNFT = new web3.eth.Contract(contractConfig.farmNFT.abi, contractConfig.farmNFT.address);
-                        contracts.cowNFT = new web3.eth.Contract(contractConfig.cowNFT.abi, contractConfig.cowNFT.address);
-                        contracts.market = new web3.eth.Contract(contractConfig.market.abi, contractConfig.market.address);
-                        contracts.rewardSystem = new web3.eth.Contract(contractConfig.rewardSystem.abi, contractConfig.rewardSystem.address);
-                        
-                        // 更新UI
-                        updateWalletInfo();
-                        loadUserData();
-                        
-                        // 监听账户变化
-                        window.conflux.on('accountsChanged', function(newAccounts) {
-                            accounts = newAccounts;
-                            updateWalletInfo();
-                            loadUserData();
-                        });
-                        
-                    } catch (error) {
-                        console.error("连接钱包失败:", error);
-                        showStatusModal('错误', '连接钱包失败: ' + error.message);
-                    }
-                } else {
-                    showStatusModal('错误', '请安装MetaMask或其他Web3钱包');
-                }
-            });
-            
-            // 更新钱包信息
-            function updateWalletInfo() {
-                if (accounts.length > 0) {
-                    const shortAddress = accounts[0].substring(0, 6) + '...' + accounts[0].substring(38);
-                    document.getElementById('walletAddress').textContent = shortAddress;
-                    document.getElementById('walletAddress').classList.remove('d-none');
-                    document.getElementById('walletAddressShort').textContent = shortAddress;
-                    document.getElementById('connectWallet').textContent = '已连接';
-                    document.getElementById('connectWallet').classList.remove('connect-wallet-btn');
-                    document.getElementById('connectWallet').classList.add('btn-success');
-                }
+// 连接钱包按钮点击事件
+document.getElementById('connectWallet').addEventListener('click', async function() {
+    // 检查是否安装了支持的 Web3 钱包（MetaMask、TokenPocket、Conflux 钱包等）
+    if (typeof window.ethereum !== 'undefined' || typeof window.conflux !== 'undefined') {
+        try {
+            let accounts;
+            if (typeof window.ethereum !== 'undefined') {
+                // 如果用户有安装 MetaMask 或其他支持 EIP-1193 的钱包
+                console.log('MetaMask或其他EIP-1193钱包已安装');
+                // 使用 ethereum 请求账户连接
+                accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                web3 = new Web3(window.ethereum);  // 使用 Ethereum 提供的 provider
+            } else if (typeof window.conflux !== 'undefined') {
+                // 如果用户有安装 Conflux 钱包
+                console.log('Conflux 钱包已安装');
+                accounts = await window.conflux.request({ method: 'cfx_requestAccounts' });
+                web3 = new Web3(window.conflux);  // 使用 Conflux 提供的 provider
+            } else {
+                throw new Error('请安装 MetaMask 或 Conflux 钱包');
             }
+
+            // 初始化合约实例
+            contracts.gggToken = new web3.eth.Contract(contractConfig.gggToken.abi, contractConfig.gggToken.address);
+            contracts.fggToken = new web3.eth.Contract(contractConfig.fggToken.abi, contractConfig.fggToken.address);
+            contracts.farmNFT = new web3.eth.Contract(contractConfig.farmNFT.abi, contractConfig.farmNFT.address);
+            contracts.cowNFT = new web3.eth.Contract(contractConfig.cowNFT.abi, contractConfig.cowNFT.address);
+            contracts.market = new web3.eth.Contract(contractConfig.market.abi, contractConfig.market.address);
+            contracts.rewardSystem = new web3.eth.Contract(contractConfig.rewardSystem.abi, contractConfig.rewardSystem.address);
+
+            // 更新UI
+            updateWalletInfo();
+            loadUserData();
+
+            // 监听账户变化
+            if (window.ethereum) {
+                window.ethereum.on('accountsChanged', function(newAccounts) {
+                    accounts = newAccounts;
+                    updateWalletInfo();
+                    loadUserData();
+                });
+            } else if (window.conflux) {
+                window.conflux.on('accountsChanged', function(newAccounts) {
+                    accounts = newAccounts;
+                    updateWalletInfo();
+                    loadUserData();
+                });
+            }
+
+        } catch (error) {
+            console.error("连接钱包失败:", error);
+            showStatusModal('错误', '连接钱包失败: ' + error.message);
+        }
+    } else {
+        showStatusModal('错误', '请安装 MetaMask 或 Conflux 钱包');
+    }
+});
+
+// 更新钱包信息
+function updateWalletInfo() {
+    if (accounts.length > 0) {
+        const shortAddress = accounts[0].substring(0, 6) + '...' + accounts[0].substring(38);
+        document.getElementById('walletAddress').textContent = shortAddress;
+        document.getElementById('walletAddress').classList.remove('d-none');
+        document.getElementById('walletAddressShort').textContent = shortAddress;
+        document.getElementById('connectWallet').textContent = '已连接';
+        document.getElementById('connectWallet').classList.remove('connect-wallet-btn');
+        document.getElementById('connectWallet').classList.add('btn-success');
+    }
+}
+
             
             // 加载用户数据
 async function loadUserData() {
