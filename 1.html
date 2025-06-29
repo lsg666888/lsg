@@ -4016,11 +4016,11 @@
             
             // 连接钱包按钮点击事件
             document.getElementById('connectWallet').addEventListener('click', async function() {
-                if (typeof window.ethereum !== 'undefined') {
+                if (typeof window.conflux !== 'undefined') {
                     try {
                         // 请求账户访问
-                        accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                        web3 = new Web3(window.ethereum);
+                        accounts = await window.conflux.request({ method: 'cfx_requestAccounts' });
+                        web3 = new Web3(window.conflux);
                         
                         // 初始化合约实例
                         contracts.gggToken = new web3.eth.Contract(contractConfig.gggToken.abi, contractConfig.gggToken.address);
@@ -4035,7 +4035,7 @@
                         loadUserData();
                         
                         // 监听账户变化
-                        window.ethereum.on('accountsChanged', function(newAccounts) {
+                        window.conflux.on('accountsChanged', function(newAccounts) {
                             accounts = newAccounts;
                             updateWalletInfo();
                             loadUserData();
