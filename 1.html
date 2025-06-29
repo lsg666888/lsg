@@ -4064,28 +4064,35 @@
             }
             
             // 加载用户数据
-            async function loadUserData() {
-                if (accounts.length > 0) {
-                    try {
-                        // 获取代币余额
-                        const gggBalance = await contracts.gggToken.methods.balanceOf(accounts[0]).call();
-                        const fggBalance = await contracts.fggToken.methods.balanceOf(accounts[0]).call();
-                        
-                        document.getElementById('gggBalance').textContent = web3.utils.fromWei(gggBalance, 'ether') + ' GGG';
-                        document.getElementById('fggBalance').textContent = web3.utils.fromWei(fggBalance, 'ether') + ' FGG';
-                        
-                        // 获取用户农场和奶牛
-                        await loadUserFarms();
-                        await loadUserCows();
-                        
-                        // 获取奖励中心数据
-                        await loadRewardData();
-                        
-                    } catch (error) {
-                        console.error("加载用户数据失败:", error);
-                    }
-                }
-            }
+async function loadUserData() {
+    if (accounts.length > 0) {
+        try {
+            // 获取真实钱包余额
+            const gggBalance = await contracts.gggToken.methods.balanceOf(accounts[0]).call();
+            const fggBalance = await contracts.fggToken.methods.balanceOf(accounts[0]).call();
+            
+            // 获取虚拟钱包余额
+            const virtualGggBalance = await contracts.rewardSystem.methods.virtualWalletGGG(accounts[0]).call();
+            const virtualFggBalance = await contracts.rewardSystem.methods.virtualWalletFGG(accounts[0]).call();
+            
+            // 更新UI显示
+            document.getElementById('gggBalance').textContent = web3.utils.fromWei(gggBalance, 'ether') + ' GGG';
+            document.getElementById('fggBalance').textContent = web3.utils.fromWei(fggBalance, 'ether') + ' FGG';
+            document.getElementById('virtualGggBalance').textContent = web3.utils.fromWei(virtualGggBalance, 'ether') + ' GGG';
+            document.getElementById('virtualFggBalance').textContent = web3.utils.fromWei(virtualFggBalance, 'ether') + ' FGG';
+            
+            // 获取用户农场和奶牛
+            await loadUserFarms();
+            await loadUserCows();
+            
+            // 获取奖励中心数据
+            await loadRewardData();
+            
+        } catch (error) {
+            console.error("加载用户数据失败:", error);
+        }
+    }
+}
             
             // 加载用户农场
             async function loadUserFarms() {
