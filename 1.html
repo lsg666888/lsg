@@ -4054,13 +4054,7 @@ document.getElementById('connectWallet').addEventListener('click', async functio
                     accounts = newAccounts;
                     updateWalletInfo();
                     loadUserData();
-                });
-            } else if (window.conflux) {
-                window.conflux.on('accountsChanged', function(newAccounts) {
-                    accounts = newAccounts;
-                    updateWalletInfo();
-                    loadUserData();
-                      });
+        });
  
  
     } catch (error) {
