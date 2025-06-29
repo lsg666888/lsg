@@ -4399,50 +4399,47 @@ document.getElementById('buyFarmBtn').addEventListener('click', function() {
             });
             
             // 施肥按钮点击事件
-            document.getElementById('fertilizeBtn').addEventListener('click', function() {
-                if (!accounts.length) {
-                    showStatusModal('错误', '请先连接钱包');
+document.getElementById('fertilizeBtn').addEventListener('click', function() {
+    if (!accounts.length) {
+        showStatusModal('错误', '请先连接钱包');
+        return;
+    }
+    
+    const farmId = document.getElementById('fertilizeFarmId').value;
+    if (!farmId) {
+        showStatusModal('错误', '请选择农场');
+        return;
+    }
+    
+    showTransactionModal(
+        '农场施肥',
+        `<p>确定要花费 <strong>1 GGG</strong> 为农场 #${farmId} 施肥吗?</p>
+         <p class="text-info">将从您的虚拟钱包扣除</p>`,
+        async function() {
+            try {
+                const price = web3.utils.toWei('1', 'ether');
+                
+                // 检查虚拟GGG余额
+                const balance = await contracts.rewardSystem.methods.virtualWalletGGG(accounts[0]).call();
+                if (BigInt(balance) < BigInt(price)) {
+                    showStatusModal('错误', '虚拟GGG余额不足');
                     return;
                 }
                 
-                const farmId = document.getElementById('fertilizeFarmId').value;
-                if (!farmId) {
-                    showStatusModal('错误', '请选择农场');
-                    return;
-                }
+                // 施肥 - 直接从虚拟钱包扣除
+                const tx = await contracts.farmNFT.methods.fertilizeFarm(farmId)
+                    .send({ from: accounts[0] });
                 
-                showTransactionModal(
-                    '农场施肥',
-                    `<p>确定要花费 <strong>1 GGG</strong> 为农场 #${farmId} 施肥吗?</p>`,
-                    async function() {
-                        try {
-                            const price = web3.utils.toWei('1', 'ether');
-                            
-                            // 检查GGG余额
-                            const balance = await contracts.gggToken.methods.balanceOf(accounts[0]).call();
-                            if (BigInt(balance) < BigInt(price)) {
-                                showStatusModal('错误', 'GGG余额不足');
-                                return;
-                            }
-                            
-                            // 批准GGG代币
-                            await contracts.gggToken.methods.approve(contracts.farmNFT.address, price)
-                                .send({ from: accounts[0] });
-                            
-                            // 施肥
-                            const tx = await contracts.farmNFT.methods.fertilizeFarm(farmId, price)
-                                .send({ from: accounts[0] });
-                            
-                            showStatusModal('成功', `农场 #${farmId} 施肥成功!`);
-                            loadUserData();
-                            
-                        } catch (error) {
-                            console.error("施肥失败:", error);
-                            showStatusModal('错误', '施肥失败: ' + error.message);
-                        }
-                    }
-                );
-            });
+                showStatusModal('成功', `农场 #${farmId} 施肥成功!`);
+                loadUserData();
+                
+            } catch (error) {
+                console.error("施肥失败:", error);
+                showStatusModal('错误', '施肥失败: ' + error.message);
+            }
+        }
+    );
+});
             
             // 收获FGG按钮点击事件
             document.getElementById('harvestBtn').addEventListener('click', function() {
