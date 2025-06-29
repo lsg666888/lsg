@@ -4016,25 +4016,27 @@
             
 // 连接钱包按钮点击事件
 document.getElementById('connectWallet').addEventListener('click', async function() {
-    // 检查是否安装了支持的 Web3 钱包（MetaMask、TokenPocket、Conflux 钱包等）
-    if (typeof window.ethereum !== 'undefined' || typeof window.conflux !== 'undefined') {
-        try {
-            let accounts;
-            if (typeof window.ethereum !== 'undefined') {
-                // 如果用户有安装 MetaMask 或其他支持 EIP-1193 的钱包
-                console.log('MetaMask或其他EIP-1193钱包已安装');
-                // 使用 ethereum 请求账户连接
-                accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                web3 = new Web3(window.ethereum);  // 使用 Ethereum 提供的 provider
-            } else if (typeof window.conflux !== 'undefined') {
-                // 如果用户有安装 Conflux 钱包
-                console.log('Conflux 钱包已安装');
-                accounts = await window.conflux.request({ method: 'cfx_requestAccounts' });
-                web3 = new Web3(window.conflux);  // 使用 Conflux 提供的 provider
-            } else {
-                throw new Error('请安装 MetaMask 或 Conflux 钱包');
+ 
+    try {
+        let provider;
+        if (typeof window.conflux !== 'undefined') {
+            provider = window.conflux;
+            accounts = await provider.request({ method: 'cfx_requestAccounts' });
+            web3 = new Web3(provider);
+            // 设置Conflux网络检查
+            const chainId = await provider.request({ method: 'cfx_chainId' });
+            if (chainId !== '0x1') { // Conflux主网chainId
+                showStatusModal('错误', '请切换到Conflux主网');
+                return;
             }
-
+        } else if (typeof window.ethereum !== 'undefined') {
+            provider = window.ethereum;
+            accounts = await provider.request({ method: 'eth_requestAccounts' });
+            web3 = new Web3(provider);
+        } else {
+            showStatusModal('错误', '请安装ConfluxPortal或MetaMask钱包');
+            return;
+        }
             // 初始化合约实例
             contracts.gggToken = new web3.eth.Contract(contractConfig.gggToken.abi, contractConfig.gggToken.address);
             contracts.fggToken = new web3.eth.Contract(contractConfig.fggToken.abi, contractConfig.fggToken.address);
@@ -4048,8 +4050,7 @@ document.getElementById('connectWallet').addEventListener('click', async functio
             loadUserData();
 
             // 监听账户变化
-            if (window.ethereum) {
-                window.ethereum.on('accountsChanged', function(newAccounts) {
+            provider.on('accountsChanged', (newAccounts) => {
                     accounts = newAccounts;
                     updateWalletInfo();
                     loadUserData();
@@ -4059,15 +4060,15 @@ document.getElementById('connectWallet').addEventListener('click', async functio
                     accounts = newAccounts;
                     updateWalletInfo();
                     loadUserData();
-                });
-            }
-
-        } catch (error) {
-            console.error("连接钱包失败:", error);
-            showStatusModal('错误', '连接钱包失败: ' + error.message);
-        }
-    } else {
-        showStatusModal('错误', '请安装 MetaMask 或 Conflux 钱包');
+                      });
+ 
+ 
+    } catch (error) {
+        console.error("连接钱包失败:", error);
+        showStatusModal('错误', '连接钱包失败: ' + error.message);
+ 
+ 
+ 
     }
 });
 
