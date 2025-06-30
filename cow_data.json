@@ -1,0 +1,12 @@
+{
+  "1": {
+    "name": "Regular Cow",
+    "description": "Produces 1 GGG/hour. Feed cost: 1 FGG/hour",
+    "image": "https://gateway.pinata.cloud/ipfs/bafkreiesuxzoolasymcppg47tm5zdlnwpczsrhkyaqramjx63efgorxcoq"
+  },
+  "2": {
+    "name": "Golden Cow",
+    "description": "Produces 3 GGG/hour. Feed cost: 2 FGG/hour",
+    "image": "https://gateway.pinata.cloud/ipfs/bafkreidtivadppfsbkyk3hzuye5jvfq3su7lwg26bgpdqpqazl5svq4smu"
+  }
+}
