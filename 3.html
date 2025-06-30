@@ -619,6 +619,17 @@
     <!-- 应用脚本 -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+	// 在页面加载完成后添加这个事件监听器
+document.addEventListener('DOMContentLoaded', function() {
+    // 使用事件委托监听所有change事件
+    document.addEventListener('change', function(e) {
+        if (e.target && e.target.id === 'depositToken') {
+            const selectedToken = e.target.value;
+            console.log(`选择的代币类型是：${selectedToken}`);
+            // 在这里添加根据代币类型更新UI的逻辑
+        }
+    });
+});
             // 初始化变量
             let web3;
             let accounts = [];
@@ -5211,15 +5222,6 @@
                     });
             }
         });
-document.getElementById('depositToken').addEventListener('change', function() {
-    const selectedToken = document.getElementById('depositToken').value;
-    console.log(`选择的代币类型是：${selectedToken}`);
-});
-
-document.getElementById('depositToken').addEventListener('touchend', function() {
-    const selectedToken = document.getElementById('depositToken').value;
-    console.log(`触摸选择的代币类型是：${selectedToken}`);
-});
     </script>
 </body>
 </html>
