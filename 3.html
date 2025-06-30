@@ -5205,6 +5205,14 @@
                     });
             }
         });
+	        document.addEventListener('DOMContentLoaded', function() {
+        // 确保DOM加载完毕后再绑定事件
+        document.getElementById('depositToken').addEventListener('change', function() {
+            const selectedToken = document.getElementById('depositToken').value;
+            console.log(`选择的代币类型是：${selectedToken}`);
+            // 在这里你可以更新UI或者执行与代币相关的操作
+        });
+    });
     </script>
 </body>
 </html>
