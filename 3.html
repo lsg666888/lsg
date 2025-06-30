@@ -126,6 +126,12 @@
             border-color: #e2731b;
             color: white;
         }
+	.select {
+    pointer-events: auto; /* 确保选择框可以接收点击事件 */
+    z-index: 10; /* 确保它不会被其他元素遮挡 */
+    display: inline-block;
+    width: 100%;
+}
     </style>
 </head>
 <body>
@@ -5205,14 +5211,15 @@
                     });
             }
         });
-	        document.addEventListener('DOMContentLoaded', function() {
-        // 确保DOM加载完毕后再绑定事件
-        document.getElementById('depositToken').addEventListener('change', function() {
-            const selectedToken = document.getElementById('depositToken').value;
-            console.log(`选择的代币类型是：${selectedToken}`);
-            // 在这里你可以更新UI或者执行与代币相关的操作
-        });
-    });
+document.getElementById('depositToken').addEventListener('change', function() {
+    const selectedToken = document.getElementById('depositToken').value;
+    console.log(`选择的代币类型是：${selectedToken}`);
+});
+
+document.getElementById('depositToken').addEventListener('touchend', function() {
+    const selectedToken = document.getElementById('depositToken').value;
+    console.log(`触摸选择的代币类型是：${selectedToken}`);
+});
     </script>
 </body>
 </html>
