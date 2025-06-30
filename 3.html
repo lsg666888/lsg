@@ -2779,6 +2779,25 @@
 				"internalType": "address",
 				"name": "",
 				"type": "address"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "uint256",
+            "name": "cowId",
+            "type": "uint256"
+         }
+      ],
+      "name": "getFertilizerCost",
+      "outputs": [
+         {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
 			}
 		],
 		"stateMutability": "view",
@@ -2793,6 +2812,25 @@
 			}
 		],
 		"name": "getGGGReward",
+      "outputs": [
+         {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "uint256",
+            "name": "cowId",
+            "type": "uint256"
+         }
+      ],
+      "name": "getLastFedTime",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -2911,7 +2949,7 @@
 	},
 	{
 		"inputs": [],
-		"name": "mergeSuccessProbability",
+		"name": "mergeFailureProbability",
 		"outputs": [
 			{
 				"internalType": "uint256",
