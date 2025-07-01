@@ -4179,45 +4179,53 @@ async function getCowMetadata(cowId) {
             
             // 加载用户奶牛
             async function loadUserCows() {
-                try {
-                    const cowCount = await contracts.cowNFT.methods.balanceOf(accounts[0]).call();
-                    const cowListElement = document.getElementById('cowList');
-                    cowListElement.innerHTML = '';
-                    
-                    if (cowCount > 0) {
-                        for (let i = 0; i < cowCount; i++) {
-                            const cowId = await contracts.cowNFT.methods.tokenOfOwnerByIndex(accounts[0], i).call();
-                            const cowType = await contracts.cowNFT.methods.cowType(cowId).call();
-                            const typeName = cowType == 1 ? '普通奶牛' : '黄金奶牛';
-                            const typeClass = cowType == 1 ? 'text-primary' : 'text-warning';
-                            
-                            // 创建奶牛卡片
-                            const cowCard = document.createElement('div');
-                            cowCard.className = 'col-md-4 mb-4';
-                            cowCard.innerHTML = `
-                                <div class="card">
-                                    <div class="card-body">
-                                        <h5 class="card-title"><i class="fas fa-cow me-2 ${typeClass}"></i>${typeName} #${cowId}</h5>
-                                        <p class="card-text">状态: 正常</p>
-                                        <div class="d-flex justify-content-between">
-                                            <button class="btn btn-sm btn-outline-primary view-cow-btn" data-cow-id="${cowId}">查看详情</button>
-                                            <button class="btn btn-sm btn-outline-secondary sell-cow-btn" data-cow-id="${cowId}">出售</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-                            cowListElement.appendChild(cowCard);
-                        }
-                    } else {
-                        cowListElement.innerHTML = '<div class="col-md-12 text-center"><p>您还没有奶牛，点击下方按钮购买第一头奶牛</p></div>';
-                    }
-                    
-                    // 更新奶牛选择下拉框
-                    updateCowSelects();
-                } catch (error) {
-                    console.error("加载奶牛失败:", error);
-                }
+    try {
+        const cowCount = await contracts.cowNFT.methods.balanceOf(accounts[0]).call();
+        const cowListElement = document.getElementById('cowList');
+        cowListElement.innerHTML = '';
+        
+        if (cowCount > 0) {
+            for (let i = 0; i < cowCount; i++) {
+                const cowId = await contracts.cowNFT.methods.tokenOfOwnerByIndex(accounts[0], i).call();
+                const cowType = await contracts.cowNFT.methods.cowType(cowId).call();
+                const typeName = cowType == 1 ? '普通奶牛' : '黄金奶牛';
+                const typeClass = cowType == 1 ? 'text-primary' : 'text-warning';
+                
+                // 获取元数据
+                const metadata = await getCowMetadata(cowId);
+                
+                // 创建奶牛卡片
+                const cowCard = document.createElement('div');
+                cowCard.className = 'col-md-4 mb-4';
+                cowCard.innerHTML = `
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-cow me-2 ${typeClass}"></i>
+                                ${metadata.name || typeName}
+                            </h5>
+                            <img src="${metadata.image}" class="img-fluid mb-2" alt="奶牛图像" style="max-height: 150px;">
+                            <p class="card-text">${metadata.description || '一只可爱的农场奶牛'}</p>
+                            <div class="d-flex justify-content-between">
+                                <button class="btn btn-sm btn-outline-primary view-cow-btn" data-cow-id="${cowId}">查看详情</button>
+                                <button class="btn btn-sm btn-outline-secondary sell-cow-btn" data-cow-id="${cowId}">出售</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                cowListElement.appendChild(cowCard);
             }
+        } else {
+            cowListElement.innerHTML = '<div class="col-md-12 text-center"><p>您还没有奶牛，点击下方按钮购买第一头奶牛</p></div>';
+        }
+        
+        // 更新奶牛选择下拉框
+        updateCowSelects();
+    } catch (error) {
+        console.error("加载奶牛失败:", error);
+        showStatusModal('错误', '加载奶牛数据失败，请稍后重试');
+    }
+}
             
             // 更新农场选择下拉框
             function updateFarmSelects() {
@@ -4959,6 +4967,57 @@ async function getCowMetadata(cowId) {
                     const orderId = e.target.getAttribute('data-order-id');
                     cancelOrder(orderId);
                 }
+
+		    // 在DOMContentLoaded事件监听器中添加
+document.addEventListener('click', function(e) {
+    // ... 其他事件处理代码
+    
+    if (e.target.classList.contains('view-cow-btn')) {
+        const cowId = e.target.getAttribute('data-cow-id');
+        viewCowDetails(cowId);
+    }
+});
+
+// 添加查看奶牛详情的函数
+async function viewCowDetails(cowId) {
+    try {
+        const cowType = await contracts.cowNFT.methods.cowType(cowId).call();
+        const metadata = await getCowMetadata(cowId);
+        const lastFedTime = await contracts.cowNFT.methods.getLastFedTime(cowId).call();
+        const canProduce = await contracts.cowNFT.methods.canProduce(cowId).call();
+        
+        const feedDate = new Date(lastFedTime * 1000).toLocaleString();
+        const status = canProduce ? '可生产' : '需要喂养';
+        
+        let attributesHtml = '';
+        if (metadata.attributes) {
+            attributesHtml = metadata.attributes.map(attr => 
+                `<li><strong>${attr.trait_type}:</strong> ${attr.value}</li>`
+            ).join('');
+        }
+        
+        showStatusModal(
+            metadata.name || `奶牛 #${cowId}`,
+            `<div class="row">
+                <div class="col-md-6">
+                    <img src="${metadata.image}" class="img-fluid rounded" alt="奶牛图像">
+                </div>
+                <div class="col-md-6">
+                    <p>${metadata.description || '一只可爱的农场奶牛'}</p>
+                    <ul>
+                        <li><strong>类型:</strong> ${cowType == 1 ? '普通奶牛' : '黄金奶牛'}</li>
+                        <li><strong>状态:</strong> ${status}</li>
+                        <li><strong>最后喂养时间:</strong> ${feedDate}</li>
+                        ${attributesHtml}
+                    </ul>
+                </div>
+            </div>`
+        );
+    } catch (error) {
+        console.error("获取奶牛详情失败:", error);
+        showStatusModal('错误', '获取奶牛详情失败');
+    }
+}
             });
             
             // 购买订单
