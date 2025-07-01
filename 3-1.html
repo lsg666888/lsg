@@ -4061,6 +4061,46 @@
                 }
             });
 
+// 添加在合约初始化之后
+async function getCowMetadata(cowId) {
+    try {
+        // 尝试从ConfluxScan API获取元数据
+        const apiUrl = `https://evm.confluxscan.org/stat/nft/checker/refresh?contractAddress=${contracts.cowNFT._address}&tokenId=${cowId}`;
+        const response = await fetch(apiUrl);
+        
+        if (response.ok) {
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                return await response.json();
+            }
+        }
+        
+        // 如果API失败，直接从合约获取
+        const tokenURI = await contracts.cowNFT.methods.tokenURI(cowId).call();
+        let metadataUrl = tokenURI;
+        
+        // 处理IPFS链接
+        if (tokenURI.startsWith('ipfs://')) {
+            metadataUrl = `https://ipfs.io/ipfs/${tokenURI.replace('ipfs://', '')}`;
+        }
+        
+        const metadataResponse = await fetch(metadataUrl);
+        return await metadataResponse.json();
+        
+    } catch (error) {
+        console.error(`获取奶牛 #${cowId} 元数据失败:`, error);
+        // 返回默认元数据
+        return {
+            name: `奶牛 #${cowId}`,
+            description: "GGG农场的神秘奶牛",
+            image: "https://example.com/default-cow.png",
+            attributes: [
+                { trait_type: "类型", value: "普通" }
+            ]
+        };
+    }
+}
+		
             // 更新钱包信息
             function updateWalletInfo() {
                 if (accounts.length > 0) {
