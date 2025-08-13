@@ -612,9 +612,13 @@
 
         .input-group input {
             flex: 1;
-            width: 50px;
         }
 
+.input-group select {
+    flex: 1;  /* 下拉框占1份宽度 */
+    min-width: 120px;  /* 最小宽度 */
+}
+        
         .data-actions {
             display: flex;
             gap: 12px;
@@ -2235,4 +2239,5 @@
     </script>
 </body>
 </html>
+
 
