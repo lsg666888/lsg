@@ -610,10 +610,20 @@
             align-items: center;
         }
 
-        .input-group input {
-            flex: 1;
-        }
+.input-group input {
+    flex: 1; /* 占据剩余空间 */
+    padding: 12px;
+    border: 1px solid var(--gray-light);
+    border-radius: var(--border-radius);
+}
 
+/* 按钮样式 - 固定宽度 */
+.input-group button {
+    width: 100px; /* 固定宽度 */
+    padding: 12px;
+    white-space: nowrap; /* 防止文字换行 */
+}
+        
 .input-group select {
     flex: 1;  /* 下拉框占1份宽度 */
     min-width: 120px;  /* 最小宽度 */
@@ -2239,6 +2249,7 @@
     </script>
 </body>
 </html>
+
 
 
 
