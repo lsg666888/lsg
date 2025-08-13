@@ -183,15 +183,15 @@
         }
         
         .record-created-date {
-            font-size: 12px;
+            font-size: 10px;
             color: #95a5a6;
         }
         
         .record-business-date {
-            font-size: 12px;
+            font-size: 10px;
         }
         
-        .date-warning .record-business-date {
+        .record-date-warning {
             color: var(--warning-color);
             font-weight: bold;
         }
@@ -489,39 +489,6 @@
             background-color: var(--expense-color);
             color: white;
         }
-
-        /* 下拉刷新样式 */
-        .refresh-container {
-            position: relative;
-            overflow: hidden;
-        }
-
-        .refresh-indicator {
-            position: absolute;
-            top: -50px;
-            left: 0;
-            right: 0;
-            height: 50px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: var(--gray-color);
-            font-size: 14px;
-        }
-
-        .refresh-spinner {
-            width: 20px;
-            height: 20px;
-            border: 2px solid var(--primary-color);
-            border-radius: 50%;
-            border-top-color: transparent;
-            animation: spin 1s linear infinite;
-            margin-right: 8px;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
     </style>
 </head>
 <body>
@@ -569,28 +536,21 @@
         </div>
         
         <div class="page" id="recordsPage">
-            <div class="refresh-container" id="refreshContainer">
-                <div class="refresh-indicator" id="refreshIndicator">
-                    <div class="refresh-spinner"></div>
-                    <span>下拉刷新</span>
-                </div>
-                
-                <div class="filter-options">
-                    <select id="recordTypeFilter">
-                        <option value="all">所有类型</option>
-                        <option value="income">收入</option>
-                        <option value="expense">支出</option>
-                    </select>
-                    <select id="recordCategoryFilter">
-                        <option value="all">所有分类</option>
-                    </select>
-                    <input type="month" id="recordMonthFilter">
-                </div>
-                
-                <ul class="record-list" id="allRecords">
-                    <li class="empty">暂无记录</li>
-                </ul>
+            <div class="filter-options">
+                <select id="recordTypeFilter">
+                    <option value="all">所有类型</option>
+                    <option value="income">收入</option>
+                    <option value="expense">支出</option>
+                </select>
+                <select id="recordCategoryFilter">
+                    <option value="all">所有分类</option>
+                </select>
+                <input type="month" id="recordMonthFilter">
             </div>
+            
+            <ul class="record-list" id="allRecords">
+                <li class="empty">暂无记录</li>
+            </ul>
         </div>
         
         <div class="page" id="statsPage">
@@ -1212,6 +1172,7 @@
                     });
                 }
                 
+                // Sort by creation time (newest first)
                 filteredRecords.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
                 
                 const listElement = document.getElementById('allRecords');
@@ -1222,26 +1183,15 @@
                     return;
                 }
                 
-                // 获取今天的日期（不考虑时间部分）
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                
                 filteredRecords.forEach(record => {
                     const li = document.createElement('li');
                     
-                    // 获取业务日期和创建日期
+                    // Check if creation time is later than business time
                     const businessDate = new Date(record.date);
                     const createdDate = new Date(record.createdAt);
                     
-                    // 检查是否是同一天
-                    const isSameDay = (date1, date2) => {
-                        return date1.getFullYear() === date2.getFullYear() &&
-                               date1.getMonth() === date2.getMonth() &&
-                               date1.getDate() === date2.getDate();
-                    };
-                    
-                    // 只有当创建时间晚于业务时间，且不是同一天时才显示警告
-                    const isDateWarning = createdDate > businessDate && !isSameDay(businessDate, today);
+                    // 只有当创建日期和业务日期不是同一天时才显示警告
+                    const isDateWarning = !this.isSameDay(createdDate, businessDate);
                     
                     if (isDateWarning) {
                         li.classList.add('date-warning');
@@ -1283,7 +1233,7 @@
                         <div>${stationName ? stationName + ' - ' : ''}${this.getCategoryName(record.type, record.category)}${paymentInfo}</div>
                         <div class="record-note">${record.note || ''}</div>
                         <div class="record-created-date">记录时间: ${createdDateStr}</div>
-                        <div class="record-business-date">业务时间: ${businessDateStr}</div>
+                        <div class="record-business-date ${isDateWarning ? 'record-date-warning' : ''}">业务时间: ${businessDateStr}</div>
                     `;
                     
                     const amountDiv = document.createElement('div');
@@ -1294,6 +1244,13 @@
                     li.appendChild(amountDiv);
                     listElement.appendChild(li);
                 });
+            },
+            
+            // 检查两个日期是否是同一天
+            isSameDay(date1, date2) {
+                return date1.getFullYear() === date2.getFullYear() &&
+                       date1.getMonth() === date2.getMonth() &&
+                       date1.getDate() === date2.getDate();
             },
             
             updateCharts() {
@@ -1796,43 +1753,43 @@
             },
             
             getCategoryColor(categoryId) {
-                // 预定义颜色映射
-                const predefinedColors = {
-                    // 收入类型颜色
-                    recharge: 'hsl(120, 60%, 50%)',
-                    company_card: 'hsl(90, 60%, 50%)',
-                    agent_card: 'hsl(60, 60%, 50%)',
-                    agent_recharge: 'hsl(30, 60%, 50%)',
-                    card_replacement: 'hsl(0, 60%, 50%)',
-                    bucket_sale: 'hsl(330, 60%, 50%)',
-                    accessory_sale: 'hsl(300, 60%, 50%)',
-                    repair_income: 'hsl(270, 60%, 50%)',
-                    other_income: 'hsl(240, 60%, 50%)',
-                    
-                    // 支出类型颜色
-                    filter: 'hsl(210, 60%, 50%)',
-                    repair: 'hsl(180, 60%, 50%)',
-                    water: 'hsl(150, 60%, 50%)',
-                    electric: 'hsl(120, 60%, 40%)',
-                    rent: 'hsl(90, 60%, 40%)',
-                    salary: 'hsl(60, 60%, 40%)',
-                    other_expense: 'hsl(30, 60%, 40%)'
-                };
-                
-                // 如果预定义了颜色，则使用预定义颜色
-                if (predefinedColors[categoryId]) {
-                    return predefinedColors[categoryId];
-                }
-                
-                // 否则为未知分类生成随机但稳定的颜色
-                let hash = 0;
-                for (let i = 0; i < categoryId.length; i++) {
-                    hash = categoryId.charCodeAt(i) + ((hash << 5) - hash);
-                }
-                
-                const hue = Math.abs(hash % 360);
-                return `hsl(${hue}, 70%, 60%)`;
-            },
+        // 预定义颜色映射
+        const predefinedColors = {
+            // 收入类型颜色
+            recharge: 'hsl(120, 60%, 50%)',
+            company_card: 'hsl(90, 60%, 50%)',
+            agent_card: 'hsl(60, 60%, 50%)',
+            agent_recharge: 'hsl(30, 60%, 50%)',
+            card_replacement: 'hsl(0, 60%, 50%)',
+            bucket_sale: 'hsl(330, 60%, 50%)',
+            accessory_sale: 'hsl(300, 60%, 50%)',
+            repair_income: 'hsl(270, 60%, 50%)',
+            other_income: 'hsl(240, 60%, 50%)',
+            
+            // 支出类型颜色
+            filter: 'hsl(210, 60%, 50%)',
+            repair: 'hsl(180, 60%, 50%)',
+            water: 'hsl(150, 60%, 50%)',
+            electric: 'hsl(120, 60%, 40%)',
+            rent: 'hsl(90, 60%, 40%)',
+            salary: 'hsl(60, 60%, 40%)',
+            other_expense: 'hsl(30, 60%, 40%)'
+        };
+        
+        // 如果预定义了颜色，则使用预定义颜色
+        if (predefinedColors[categoryId]) {
+            return predefinedColors[categoryId];
+        }
+        
+        // 否则为未知分类生成随机但稳定的颜色
+        let hash = 0;
+        for (let i = 0; i < categoryId.length; i++) {
+            hash = categoryId.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        
+        const hue = Math.abs(hash % 360);
+        return `hsl(${hue}, 70%, 60%)`;
+    },
             
             showPage(pageId) {
                 document.querySelectorAll('.page').forEach(page => {
@@ -2027,77 +1984,6 @@
                     }
                 });
                 
-                // 下拉刷新功能
-                const refreshContainer = document.getElementById('refreshContainer');
-                const refreshIndicator = document.getElementById('refreshIndicator');
-                let startY = 0;
-                let isRefreshing = false;
-
-                refreshContainer.addEventListener('touchstart', (e) => {
-                    if (isRefreshing || window.scrollY > 0) return;
-                    startY = e.touches[0].pageY;
-                });
-
-                // 修改现有的下拉刷新事件监听器
-refreshContainer.addEventListener('touchmove', (e) => {
-    if (isRefreshing) return;
-    
-    const y = e.touches[0].pageY;
-    const diff = y - startY;
-    
-    if (diff > 0 && window.pageYOffset <= 0) {
-        e.preventDefault();
-        refreshContainer.style.transform = `translateY(${diff}px)`;
-        
-        if (diff > 80) {
-            refreshIndicator.querySelector('span').textContent = '释放刷新';
-        } else {
-            refreshIndicator.querySelector('span').textContent = '下拉刷新';
-        }
-    }
-});
-
-                refreshContainer.addEventListener('touchend', (e) => {
-                    if (isRefreshing || window.scrollY > 0) return;
-                    
-                    const y = e.changedTouches[0].pageY;
-                    const diff = y - startY;
-                    
-                    if (diff > 80) {
-                        isRefreshing = true;
-                        refreshIndicator.querySelector('span').textContent = '正在刷新...';
-                        refreshContainer.style.transition = 'transform 0.3s';
-                        refreshContainer.style.transform = 'translateY(50px)';
-                        
-                        // 模拟刷新数据
-                        setTimeout(() => {
-                            this.updateAllRecords();
-                            refreshContainer.style.transition = 'transform 0.3s';
-                            refreshContainer.style.transform = 'translateY(0)';
-                            
-                            setTimeout(() => {
-                                refreshContainer.style.transition = '';
-                                refreshIndicator.querySelector('span').textContent = '下拉刷新';
-                                isRefreshing = false;
-                            }, 300);
-                        }, 1000);
-                    } else {
-                        refreshContainer.style.transition = 'transform 0.3s';
-                        refreshContainer.style.transform = 'translateY(0)';
-                        
-                        setTimeout(() => {
-                            refreshContainer.style.transition = '';
-                        }, 300);
-                    }
-                });
-                
-                // 防止快速滑动时卡顿
-                refreshContainer.addEventListener('transitionend', () => {
-                    if (refreshContainer.style.transform === 'translateY(0px)') {
-                        refreshContainer.style.transition = '';
-                    }
-                });
-                
                 this.initCategoryFilter();
             },
             
@@ -2127,4 +2013,3 @@ refreshContainer.addEventListener('touchmove', (e) => {
     </script>
 </body>
 </html>
-
