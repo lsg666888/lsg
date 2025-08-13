@@ -699,7 +699,7 @@
 
     <div class="app-container">
         <div class="app-header">
-            <h1 id="currentStationName">10水站记账系统</h1>
+            <h1 id="currentStationName">1水站记账系统</h1>
             <div class="current-month" id="currentDate">2023年11月</div>
         </div>
         
@@ -1184,30 +1184,6 @@ exportData() {
         this.fallbackExport(jsonData, fileName);
     }
 },
-
-// 新增的回退导出方法
-fallbackExport(jsonData, fileName) {
-    try {
-        const blob = new Blob([jsonData], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName;
-        document.body.appendChild(a);
-        a.click();
-        
-        setTimeout(() => {
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }, 100);
-        
-        this.showAlert('数据导出成功');
-    } catch (err) {
-        console.error('导出失败:', err);
-        this.showAlert('导出失败，请重试');
-    }
-}
             
             importData(file, override) {
                 const reader = new FileReader();
