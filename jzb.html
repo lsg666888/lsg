@@ -2038,23 +2038,24 @@
                     startY = e.touches[0].pageY;
                 });
 
-                refreshContainer.addEventListener('touchmove', (e) => {
-                    if (isRefreshing || window.scrollY > 0) return;
-                    
-                    const y = e.touches[0].pageY;
-                    const diff = y - startY;
-                    
-                    if (diff > 0) {
-                        e.preventDefault();
-                        refreshContainer.style.transform = `translateY(${diff}px)`;
-                        
-                        if (diff > 80) {
-                            refreshIndicator.querySelector('span').textContent = '释放刷新';
-                        } else {
-                            refreshIndicator.querySelector('span').textContent = '下拉刷新';
-                        }
-                    }
-                });
+                // 修改现有的下拉刷新事件监听器
+refreshContainer.addEventListener('touchmove', (e) => {
+    if (isRefreshing) return;
+    
+    const y = e.touches[0].pageY;
+    const diff = y - startY;
+    
+    if (diff > 0 && window.pageYOffset <= 0) {
+        e.preventDefault();
+        refreshContainer.style.transform = `translateY(${diff}px)`;
+        
+        if (diff > 80) {
+            refreshIndicator.querySelector('span').textContent = '释放刷新';
+        } else {
+            refreshIndicator.querySelector('span').textContent = '下拉刷新';
+        }
+    }
+});
 
                 refreshContainer.addEventListener('touchend', (e) => {
                     if (isRefreshing || window.scrollY > 0) return;
@@ -2126,3 +2127,4 @@
     </script>
 </body>
 </html>
+
