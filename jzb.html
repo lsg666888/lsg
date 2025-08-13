@@ -1809,7 +1809,7 @@
                 }
             },
             
-            showModal(type) {
+showModal(type) {
     const modal = document.getElementById('recordModal');
     const title = type === 'income' ? '记录收入' : '记录支出';
     
@@ -1825,11 +1825,24 @@
         option.textContent = cat.name;
         categorySelect.appendChild(option);
     });
-
-    // 获取当前日期，并设置为日期输入框的默认值
-    const today = new Date().toISOString().split('T')[0];  // 获取当前日期 (yyyy-mm-dd)
-    document.getElementById('recordDate').value = today;  // 设置日期输入框的值为今天
-
+    
+    // 修正日期设置 - 使用本地日期而不是UTC
+    const now = new Date();
+    // 方法1：手动构建日期字符串（推荐）
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const today = `${year}-${month}-${day}`;
+    
+    // 方法2：使用toLocaleDateString（备选）
+    // const today = now.toLocaleDateString('zh-CN', {
+    //     year: 'numeric',
+    //     month: '2-digit',
+    //     day: '2-digit'
+    // }).replace(/\//g, '-');
+    
+    document.getElementById('recordDate').value = today;
+    
     // 重置水站选择
     document.getElementById('modalStationSelect').value = this.data.currentStation || '';
     
@@ -2011,5 +2024,6 @@
     </script>
 </body>
 </html>
+
 
 
