@@ -699,7 +699,7 @@
 
     <div class="app-container">
         <div class="app-header">
-            <h1 id="currentStationName">1水站记账系统</h1>
+            <h1 id="currentStationName">水站记账系统</h1>
             <div class="current-month" id="currentDate">2023年11月</div>
         </div>
         
@@ -1157,33 +1157,25 @@
                 localStorage.setItem('recordTypes', JSON.stringify(this.data.recordTypes));
             },
             
-exportData() {
-    const data = {
-        stations: this.data.stations,
-        records: this.data.records,
-        recordTypes: this.data.recordTypes,
-        exportedAt: new Date().toISOString()
-    };
-    
-    const jsonData = JSON.stringify(data, null, 2);
-    const fileName = `水站记账数据_${new Date().toLocaleDateString()}.json`;
-    
-    // 检查是否在PakePlus环境中
-    if (window.__PAKE__ && window.__PAKE__.saveFile) {
-        // 使用PakePlus的API保存文件
-        window.__PAKE__.saveFile(fileName, jsonData, 'application/json')
-            .then(() => {
+            exportData() {
+                const data = {
+                    stations: this.data.stations,
+                    records: this.data.records,
+                    recordTypes: this.data.recordTypes,
+                    exportedAt: new Date().toISOString()
+                };
+                
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `水站记账数据_${new Date().toLocaleDateString()}.json`;
+                a.click();
+                
+                URL.revokeObjectURL(url);
                 this.showAlert('数据导出成功');
-            })
-            .catch((err) => {
-                console.error('PakePlus保存失败:', err);
-                this.fallbackExport(jsonData, fileName);
-            });
-    } else {
-        // 普通浏览器环境下的导出方式
-        this.fallbackExport(jsonData, fileName);
-    }
-},
+            },
             
             importData(file, override) {
                 const reader = new FileReader();
