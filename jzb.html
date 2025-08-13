@@ -1810,31 +1810,32 @@
             },
             
             showModal(type) {
-                const modal = document.getElementById('recordModal');
-                const title = type === 'income' ? '记录收入' : '记录支出';
-                
-                document.getElementById('modalTitle').textContent = title;
-                
-                const categorySelect = document.getElementById('recordCategory');
-                categorySelect.innerHTML = '';
-                
-                const categories = type === 'income' ? this.data.recordTypes.income : this.data.recordTypes.expense;
-                categories.forEach(cat => {
-                    const option = document.createElement('option');
-                    option.value = cat.id;
-                    option.textContent = cat.name;
-                    categorySelect.appendChild(option);
-                });
-                
-                const today = new Date().toISOString().split('T')[0];
-                document.getElementById('recordDate').value = today;
-                
-                // 重置水站选择
-                document.getElementById('modalStationSelect').value = this.data.currentStation || '';
-                
-                modal.style.display = 'flex';
-            },
-            
+    const modal = document.getElementById('recordModal');
+    const title = type === 'income' ? '记录收入' : '记录支出';
+    
+    document.getElementById('modalTitle').textContent = title;
+    
+    const categorySelect = document.getElementById('recordCategory');
+    categorySelect.innerHTML = '';
+    
+    const categories = type === 'income' ? this.data.recordTypes.income : this.data.recordTypes.expense;
+    categories.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat.id;
+        option.textContent = cat.name;
+        categorySelect.appendChild(option);
+    });
+
+    // 获取当前日期，并设置为日期输入框的默认值
+    const today = new Date().toISOString().split('T')[0];  // 获取当前日期 (yyyy-mm-dd)
+    document.getElementById('recordDate').value = today;  // 设置日期输入框的值为今天
+
+    // 重置水站选择
+    document.getElementById('modalStationSelect').value = this.data.currentStation || '';
+    
+    modal.style.display = 'flex';
+},
+
             hideModal() {
                 document.getElementById('recordModal').style.display = 'none';
                 document.getElementById('importModal').style.display = 'none';
@@ -2010,4 +2011,5 @@
     </script>
 </body>
 </html>
+
 
