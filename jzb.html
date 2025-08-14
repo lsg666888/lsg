@@ -610,25 +610,24 @@
             align-items: center;
         }
 
-.input-group input {
-    flex: 1; /* 占据剩余空间 */
-    width: 100%;
-    padding: 12px;
-    border: 1px solid var(--gray-light);
-    border-radius: var(--border-radius);
-}
+        .input-group input {
+            flex: 1;
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--gray-light);
+            border-radius: var(--border-radius);
+        }
 
-/* 按钮样式 - 固定宽度 */
-.input-group button {
-    width: 50px; /* 固定宽度 */
-    padding: 12px;
-    white-space: nowrap; /* 防止文字换行 */
-}
+        .input-group button {
+            width: 50px;
+            padding: 12px;
+            white-space: nowrap;
+        }
         
-.input-group select {
-    flex: 1;  /* 下拉框占1份宽度 */
-    min-width: 120px;  /* 最小宽度 */
-}
+        .input-group select {
+            flex: 1;
+            min-width: 120px;
+        }
         
         .data-actions {
             display: flex;
@@ -691,6 +690,24 @@
 
         .date-warning {
             background-color: rgba(255, 0, 0, 0.05);
+        }
+
+        #loadMoreBtn {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+            border-radius: var(--border-radius);
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        #loadMoreBtn:hover {
+            background-color: var(--primary-color);
+            color: white;
         }
     </style>
 </head>
@@ -982,7 +999,6 @@
             </div>
             
             <button class="btn-submit" id="btnSaveCategory">保存</button>
-            <button class="btn-expense" id="btnDeleteCategory">删除</button>
         </div>
     </div>
     
@@ -1001,7 +1017,10 @@
                     { id: 'alipay', name: '支付宝' },
                     { id: 'cash', name: '现金' },
                     { id: 'other', name: '其他' }
-                ]
+                ],
+                currentPage: 1,
+                recordsPerPage: 20,
+                allRecordsLoaded: false
             },
             
             showAlert(message) {
@@ -1053,6 +1072,8 @@
             
             selectStation(stationId) {
                 this.data.currentStation = stationId;
+                this.data.currentPage = 1;
+                this.data.allRecordsLoaded = false;
                 
                 if (stationId) {
                     document.getElementById('currentStationName').textContent = 
@@ -1157,41 +1178,38 @@
                 localStorage.setItem('recordTypes', JSON.stringify(this.data.recordTypes));
             },
             
-exportData() {
-    const data = {
-        stations: this.data.stations,
-        records: this.data.records,
-        recordTypes: this.data.recordTypes,
-        exportedAt: new Date().toISOString()
-    };
-    
-    const dataStr = JSON.stringify(data, null, 2);
-    const filename = `water_station_data_${new Date().toLocaleDateString('en-US')}.json`;
-    
-    // 尝试使用FileSaver.js的polyfill方法
-    if (typeof navigator !== 'undefined' && navigator.msSaveOrOpenBlob) {
-        // IE10+专用方法
-        const blob = new Blob([dataStr], {type: 'application/json'});
-        navigator.msSaveOrOpenBlob(blob, filename);
-    } else {
-        // 标准方法
-        const blob = new Blob([dataStr], {type: 'application/json'});
-        const url = URL.createObjectURL(blob);
-        
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        
-        setTimeout(() => {
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }, 100);
-    }
-    
-    this.showAlert('数据导出成功');
-},
+            exportData() {
+                const data = {
+                    stations: this.data.stations,
+                    records: this.data.records,
+                    recordTypes: this.data.recordTypes,
+                    exportedAt: new Date().toISOString()
+                };
+                
+                const dataStr = JSON.stringify(data, null, 2);
+                const filename = `water_station_data_${new Date().toLocaleDateString('en-US')}.json`;
+                
+                if (typeof navigator !== 'undefined' && navigator.msSaveOrOpenBlob) {
+                    const blob = new Blob([dataStr], {type: 'application/json'});
+                    navigator.msSaveOrOpenBlob(blob, filename);
+                } else {
+                    const blob = new Blob([dataStr], {type: 'application/json'});
+                    const url = URL.createObjectURL(blob);
+                    
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    
+                    setTimeout(() => {
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    }, 100);
+                }
+                
+                this.showAlert('数据导出成功');
+            },
             
             importData(file, override) {
                 const reader = new FileReader();
@@ -1224,7 +1242,6 @@ exportData() {
                                 }
                             }
 
-                            // Merge record types
                             if (importedData.recordTypes) {
                                 const existingIncomeIds = this.data.recordTypes.income.map(c => c.id);
                                 const newIncomeCategories = importedData.recordTypes.income.filter(c => 
@@ -1267,6 +1284,8 @@ exportData() {
                     expense: []
                 };
                 this.data.currentStation = null;
+                this.data.currentPage = 1;
+                this.data.allRecordsLoaded = false;
                 
                 this.saveRecordTypes();
                 this.loadStations();
@@ -1279,7 +1298,7 @@ exportData() {
             updateUI() {
                 this.updateSummary();
                 this.updateRecentRecords();
-                this.updateAllRecords();
+                this.updateAllRecords(true);
                 this.updateCharts();
                 this.updateStationList();
                 this.updateSummaryTable();
@@ -1363,7 +1382,12 @@ exportData() {
                 });
             },
             
-            updateAllRecords() {
+            updateAllRecords(resetPagination = false) {
+                if (resetPagination) {
+                    this.data.currentPage = 1;
+                    this.data.allRecordsLoaded = false;
+                }
+
                 let records = [];
                 
                 if (this.data.currentStation) {
@@ -1397,25 +1421,33 @@ exportData() {
                     });
                 }
                 
-                // Sort by creation time (newest first)
                 filteredRecords.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
                 
                 const listElement = document.getElementById('allRecords');
-                listElement.innerHTML = '';
                 
-                if (filteredRecords.length === 0) {
+                if (resetPagination) {
+                    listElement.innerHTML = '';
+                }
+                
+                if (filteredRecords.length === 0 && this.data.currentPage === 1) {
                     listElement.innerHTML = '<li class="empty">暂无记录</li>';
                     return;
                 }
                 
-                filteredRecords.forEach(record => {
+                const startIndex = (this.data.currentPage - 1) * this.data.recordsPerPage;
+                const endIndex = startIndex + this.data.recordsPerPage;
+                const recordsToShow = filteredRecords.slice(startIndex, endIndex);
+                
+                if (endIndex >= filteredRecords.length) {
+                    this.data.allRecordsLoaded = true;
+                }
+                
+                recordsToShow.forEach(record => {
                     const li = document.createElement('li');
                     
-                    // Check if creation time is later than business time
                     const businessDate = new Date(record.date);
                     const createdDate = new Date(record.createdAt);
                     
-                    // 只有当创建日期和业务日期不是同一天时才显示警告
                     const isDateWarning = !this.isSameDay(createdDate, businessDate);
                     
                     if (isDateWarning) {
@@ -1466,9 +1498,40 @@ exportData() {
                     li.appendChild(amountDiv);
                     listElement.appendChild(li);
                 });
+                
+                if (!this.data.allRecordsLoaded && filteredRecords.length > this.data.currentPage * this.data.recordsPerPage) {
+                    this.addLoadMoreButton();
+                }
+            },
+
+            addLoadMoreButton() {
+                const listElement = document.getElementById('allRecords');
+                const existingLoadMore = document.getElementById('loadMoreBtn');
+                
+                if (existingLoadMore) {
+                    existingLoadMore.remove();
+                }
+                
+                const li = document.createElement('li');
+                li.style.textAlign = 'center';
+                li.style.padding = '16px 0';
+                
+                const button = document.createElement('button');
+                button.id = 'loadMoreBtn';
+                button.textContent = '加载更多';
+                button.className = 'btn-secondary';
+                button.style.width = '200px';
+                button.style.margin = '0 auto';
+                
+                button.addEventListener('click', () => {
+                    this.data.currentPage++;
+                    this.updateAllRecords();
+                });
+                
+                li.appendChild(button);
+                listElement.appendChild(li);
             },
             
-            // 检查两个日期是否是同一天
             isSameDay(date1, date2) {
                 return date1.getFullYear() === date2.getFullYear() &&
                        date1.getMonth() === date2.getMonth() &&
@@ -1531,7 +1594,7 @@ exportData() {
                             const [endYear, endMonthNum] = endMonth.split('-').map(Number);
                             
                             const startDate = new Date(startYear, startMonthNum - 1, 1);
-                            const endDate = new Date(endYear, endMonthNum, 0); // Last day of end month
+                            const endDate = new Date(endYear, endMonthNum, 0);
                             
                             filteredRecords = records.filter(r => {
                                 const recordDate = new Date(r.date);
@@ -1640,7 +1703,7 @@ exportData() {
                             const [endYear, endMonthNum] = endMonth.split('-').map(Number);
                             
                             const startDate = new Date(startYear, startMonthNum - 1, 1);
-                            const endDate = new Date(endYear, endMonthNum, 0); // Last day of end month
+                            const endDate = new Date(endYear, endMonthNum, 0);
                             
                             filteredRecords = records.filter(r => {
                                 const recordDate = new Date(r.date);
@@ -1654,7 +1717,6 @@ exportData() {
                         filteredRecords = [...records];
                 }
                 
-                // Group records by month
                 const recordsByMonth = {};
                 
                 filteredRecords.forEach(record => {
@@ -1677,7 +1739,6 @@ exportData() {
                     }
                 });
                 
-                // Sort months chronologically
                 const sortedMonths = Object.keys(recordsByMonth).sort();
                 
                 const tableBody = document.getElementById('summaryTableBody');
@@ -1703,7 +1764,6 @@ exportData() {
                     tableBody.appendChild(row);
                 });
                 
-                // Add total row
                 const totalIncome = filteredRecords
                     .filter(r => r.type === 'income')
                     .reduce((sum, r) => sum + r.amount, 0);
@@ -1915,7 +1975,6 @@ exportData() {
                     });
                 }
 
-                // Add event listeners to edit buttons
                 document.querySelectorAll('#incomeCategoryList .edit-btn, #expenseCategoryList .edit-btn').forEach(btn => {
                     btn.addEventListener('click', (e) => {
                         const type = e.target.dataset.type;
@@ -1934,7 +1993,6 @@ exportData() {
             addCategory(type, name) {
                 if (!name.trim()) return;
 
-                // Check if name already exists
                 const existingCategory = this.data.recordTypes[type].find(c => c.name === name.trim());
                 if (existingCategory) {
                     this.showAlert('该类型已存在');
@@ -1992,9 +2050,7 @@ exportData() {
             },
             
             getCategoryColor(categoryId) {
-                // 预定义颜色映射
                 const predefinedColors = {
-                    // 收入类型颜色
                     recharge: 'hsl(120, 60%, 50%)',
                     company_card: 'hsl(90, 60%, 50%)',
                     agent_card: 'hsl(60, 60%, 50%)',
@@ -2005,7 +2061,6 @@ exportData() {
                     repair_income: 'hsl(270, 60%, 50%)',
                     other_income: 'hsl(240, 60%, 50%)',
                     
-                    // 支出类型颜色
                     filter: 'hsl(210, 60%, 50%)',
                     repair: 'hsl(180, 60%, 50%)',
                     water: 'hsl(150, 60%, 50%)',
@@ -2015,12 +2070,10 @@ exportData() {
                     other_expense: 'hsl(30, 60%, 40%)'
                 };
                 
-                // 如果预定义了颜色，则使用预定义颜色
                 if (predefinedColors[categoryId]) {
                     return predefinedColors[categoryId];
                 }
                 
-                // 否则为未知分类生成随机但稳定的颜色
                 let hash = 0;
                 for (let i = 0; i < categoryId.length; i++) {
                     hash = categoryId.charCodeAt(i) + ((hash << 5) - hash);
@@ -2047,7 +2100,7 @@ exportData() {
                 }
                 
                 if (pageId === 'recordsPage') {
-                    this.updateAllRecords();
+                    this.updateAllRecords(true);
                 }
             },
             
@@ -2068,24 +2121,14 @@ exportData() {
                     categorySelect.appendChild(option);
                 });
                 
-                // 修正日期设置 - 使用本地日期而不是UTC
                 const now = new Date();
-                // 方法1：手动构建日期字符串（推荐）
                 const year = now.getFullYear();
                 const month = String(now.getMonth() + 1).padStart(2, '0');
                 const day = String(now.getDate()).padStart(2, '0');
                 const today = `${year}-${month}-${day}`;
                 
-                // 方法2：使用toLocaleDateString（备选）
-                // const today = now.toLocaleDateString('zh-CN', {
-                //     year: 'numeric',
-                //     month: '2-digit',
-                //     day: '2-digit'
-                // }).replace(/\//g, '-');
-                
                 document.getElementById('recordDate').value = today;
                 
-                // 重置水站选择
                 document.getElementById('modalStationSelect').value = this.data.currentStation || '';
                 
                 modal.style.display = 'flex';
@@ -2201,15 +2244,15 @@ exportData() {
                 });
                 
                 document.getElementById('recordTypeFilter').addEventListener('change', () => {
-                    this.updateAllRecords();
+                    this.updateAllRecords(true);
                 });
                 
                 document.getElementById('recordCategoryFilter').addEventListener('change', () => {
-                    this.updateAllRecords();
+                    this.updateAllRecords(true);
                 });
                 
                 document.getElementById('recordMonthFilter').addEventListener('change', () => {
-                    this.updateAllRecords();
+                    this.updateAllRecords(true);
                 });
                 
                 document.getElementById('statsTimeRange').addEventListener('change', (e) => {
