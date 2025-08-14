@@ -1697,8 +1697,8 @@ exportData() {
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${year}年<br>${month}月</td>
-                        <td class="income-cell">¥<br>${monthData.income.toFixed(1)}</td>
-                        <td class="expense-cell">¥${monthData.expense.toFixed(2)}</td>
+                        <td class="income-cell">¥${monthData.income.toFixed(0)}</td>
+                        <td class="expense-cell">¥${monthData.expense.toFixed(0)}</td>
                         <td class="balance-cell">¥${balance.toFixed(2)}</td>
                     `;
                     tableBody.appendChild(row);
@@ -2267,6 +2267,7 @@ exportData() {
     </script>
 </body>
 </html>
+
 
 
 
