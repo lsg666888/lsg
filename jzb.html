@@ -1157,25 +1157,41 @@
                 localStorage.setItem('recordTypes', JSON.stringify(this.data.recordTypes));
             },
             
-            exportData() {
-                const data = {
-                    stations: this.data.stations,
-                    records: this.data.records,
-                    recordTypes: this.data.recordTypes,
-                    exportedAt: new Date().toISOString()
-                };
-                
-                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `水站记账数据_${new Date().toLocaleDateString()}.json`;
-                a.click();
-                
-                URL.revokeObjectURL(url);
-                this.showAlert('数据导出成功');
-            },
+exportData() {
+    const data = {
+        stations: this.data.stations,
+        records: this.data.records,
+        recordTypes: this.data.recordTypes,
+        exportedAt: new Date().toISOString()
+    };
+    
+    const dataStr = JSON.stringify(data, null, 2);
+    const filename = `water_station_data_${new Date().toLocaleDateString('en-US')}.json`;
+    
+    // 尝试使用FileSaver.js的polyfill方法
+    if (typeof navigator !== 'undefined' && navigator.msSaveOrOpenBlob) {
+        // IE10+专用方法
+        const blob = new Blob([dataStr], {type: 'application/json'});
+        navigator.msSaveOrOpenBlob(blob, filename);
+    } else {
+        // 标准方法
+        const blob = new Blob([dataStr], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        
+        setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }, 100);
+    }
+    
+    this.showAlert('数据导出成功');
+},
             
             importData(file, override) {
                 const reader = new FileReader();
