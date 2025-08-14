@@ -1720,8 +1720,8 @@ exportData() {
                 totalRow.style.backgroundColor = 'var(--light-color)';
                 totalRow.innerHTML = `
                     <td>总计</td>
-                    <td class="income-cell">¥${totalIncome.toFixed(2)}</td>
-                    <td class="expense-cell">¥${totalExpense.toFixed(2)}</td>
+                    <td class="income-cell">¥${totalIncome.toFixed(0)}</td>
+                    <td class="expense-cell">¥${totalExpense.toFixed(0)}</td>
                     <td class="balance-cell">¥${totalBalance.toFixed(2)}</td>
                 `;
                 tableBody.appendChild(totalRow);
@@ -2267,6 +2267,7 @@ exportData() {
     </script>
 </body>
 </html>
+
 
 
 
