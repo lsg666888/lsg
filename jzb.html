@@ -643,10 +643,66 @@
             min-width: 120px;
         }
 
+        /* 美化后的筛选选项卡样式 */
+        .filter-tabs {
+            display: flex;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--gray-light);
+            padding: 8px;
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+
+        .filter-tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--gray-color);
+            transition: var(--transition);
+            position: relative;
+            border-radius: 8px;
+        }
+
+        .filter-tab.active {
+            color: var(--primary-color);
+            background-color: var(--primary-light);
+        }
+
+        .filter-tab:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 60%;
+            width: 1px;
+            background-color: var(--gray-light);
+        }
+
+        .filter-content {
+            display: none;
+            padding: 12px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--gray-light);
+            margin-bottom: 16px;
+        }
+
+        .filter-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
         .filter-options {
             display: flex;
             gap: 12px;
-            margin-bottom: 16px;
+            margin-bottom: 0;
             flex-wrap: wrap;
         }
 
@@ -746,15 +802,31 @@
         </div>
         
         <div class="page" id="recordsPage">
-            <div class="filter-options">
+            <!-- 美化后的筛选选项卡 -->
+            <div class="filter-tabs">
+                <div class="filter-tab active" data-filter="type">类型</div>
+                <div class="filter-tab" data-filter="category">分类</div>
+                <div class="filter-tab" data-filter="date">日期</div>
+            </div>
+            
+            <!-- 类型筛选内容 -->
+            <div class="filter-content active" id="typeFilterContent">
                 <select id="recordTypeFilter">
                     <option value="all">所有类型</option>
                     <option value="income">收入</option>
                     <option value="expense">支出</option>
                 </select>
+            </div>
+            
+            <!-- 分类筛选内容 -->
+            <div class="filter-content" id="categoryFilterContent">
                 <select id="recordCategoryFilter">
                     <option value="all">所有分类</option>
                 </select>
+            </div>
+            
+            <!-- 日期筛选内容 -->
+            <div class="filter-content" id="dateFilterContent">
                 <input type="month" id="recordMonthFilter">
             </div>
             
@@ -2236,6 +2308,24 @@ exportData() {
                         this.updateCharts();
                         this.updateSummaryTable();
                     }
+                });
+                
+                // 添加筛选选项卡点击事件
+                document.querySelectorAll('.filter-tab').forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        // 更新活动选项卡
+                        document.querySelectorAll('.filter-tab').forEach(t => {
+                            t.classList.remove('active');
+                        });
+                        tab.classList.add('active');
+                        
+                        // 更新活动内容
+                        const filterType = tab.dataset.filter;
+                        document.querySelectorAll('.filter-content').forEach(content => {
+                            content.classList.remove('active');
+                        });
+                        document.getElementById(`${filterType}FilterContent`).classList.add('active');
+                    });
                 });
                 
                 this.initCategoryFilter();
