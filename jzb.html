@@ -170,6 +170,33 @@
             background-color: #3a56d4;
             transform: translateY(-2px);
         }
+
+.modal-button-group {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.modal-button-group button {
+    flex: 1;
+    padding: 14px;
+    border-radius: var(--border-radius);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    border: none;
+}
+
+#btnSaveCategory {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+#btnDeleteCategory {
+    background-color: var(--expense-color);
+    color: white;
+}
         
         .btn-secondary {
             background-color: white;
@@ -699,7 +726,7 @@
 
     <div class="app-container">
         <div class="app-header">
-            <h1 id="currentStationName">888水站记账系统</h1>
+            <h1 id="currentStationName">666水站记账系统</h1>
             <div class="current-month" id="currentDate">2023年11月</div>
         </div>
         
@@ -980,9 +1007,10 @@
                 <input type="text" id="editCategoryName" placeholder="输入类型名称">
                 <input type="hidden" id="editCategoryId">
             </div>
-            
+            <div class="modal-button-group">
             <button class="btn-submit" id="btnSaveCategory">保存</button>
             <button class="btn-expense" id="btnDeleteCategory">删除</button>
+            </div>
         </div>
     </div>
     
@@ -2266,4 +2294,5 @@ exportData() {
     </script>
 </body>
 </html>
+
 
