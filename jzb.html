@@ -605,11 +605,13 @@
             font-size: 18px;
         }
 
-        .input-group {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
+.input-group {
+    display: flex;
+    flex-direction: column; /* 改为竖排 */
+    gap: 12px; /* 上下间距 */
+    align-items: stretch; /* 让元素占满宽度 */
+}
+
 
 .input-group input {
     flex: 1; /* 占据剩余空间 */
@@ -2357,3 +2359,4 @@ exportData() {
     </script>
 </body>
 </html>
+
