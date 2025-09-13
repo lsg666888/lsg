@@ -3,330 +3,1576 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>数据导出解决方案</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>水站多站点记账系统</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: #4361ee;
+            --primary-light: #e6e9ff;
+            --income-color: #4cc9f0;
+            --income-light: #e6f7ff;
+            --expense-color: #f72585;
+            --expense-light: #ffe6ee;
+            --dark-color: #2b2d42;
+            --light-color: #f8f9fa;
+            --gray-color: #adb5bd;
+            --gray-light: #e9ecef;
+            --warning-color: #ff0000;
+            --success-color: #2ec4b6;
+            --border-radius: 12px;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --transition: all 0.25s cubic-bezier(0.645, 0.045, 0.355, 1);
+        }
+        
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
         body {
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-            color: #333;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        header {
-            text-align: center;
-            padding: 30px 0;
-            color: white;
-        }
-        
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        }
-        
-        .subtitle {
-            font-size: 1.2rem;
-            opacity: 0.9;
-        }
-        
-        .card {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-            padding: 25px;
-            margin-bottom: 30px;
-            transition: transform 0.3s ease;
-        }
-        
-        .card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .card-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-            color: #2575fc;
-        }
-        
-        .card-header i {
-            font-size: 24px;
-            margin-right: 10px;
-        }
-        
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-        
-        .data-table th, .data-table td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        
-        .data-table th {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: #f8f9fa;
-            color: #495057;
+            color: #2b2d42;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
         
-        .data-table tr:hover {
-            background-color: #f1f7ff;
+        .app-container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            min-height: 100vh;
+            padding-bottom: 120px;
         }
         
-        .btn {
-            display: inline-block;
-            padding: 12px 25px;
-            background: #4e54c8;
-            color: white;
+        .app-header {
+            text-align: center;
+            margin-bottom: 24px;
+            position: relative;
+        }
+        
+        .app-header h1 {
+            color: var(--dark-color);
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+            letter-spacing: -0.5px;
+        }
+        
+        .current-month {
+            color: var(--gray-color);
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .summary-card {
+            display: flex;
+            justify-content: space-between;
+            background: white;
+            color: var(--dark-color);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 24px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--gray-light);
+        }
+        
+        .summary-card div {
+            text-align: center;
+            flex: 1;
+            padding: 0 8px;
+        }
+        
+        .summary-card span {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--gray-color);
+            margin-bottom: 6px;
+        }
+        
+        .summary-card strong {
+            font-size: 13px;
+            font-weight: 700;
+            display: block;
+        }
+        
+        .income strong {
+            color: var(--income-color);
+        }
+        
+        .expense strong {
+            color: var(--expense-color);
+        }
+        
+        .balance strong {
+            color: var(--primary-color);
+        }
+        
+        .quick-actions {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 14px;
             border: none;
-            border-radius: 50px;
-            cursor: pointer;
+            border-radius: var(--border-radius);
             font-size: 16px;
             font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(78, 84, 200, 0.4);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
         
-        .btn:hover {
-            background: #3a3eb3;
-            box-shadow: 0 6px 20px rgba(78, 84, 200, 0.6);
+        .btn-income {
+            background-color: var(--income-light);
+            color: var(--income-color);
+            border: 1px solid rgba(76, 201, 240, 0.3);
+        }
+        
+        .btn-income:hover {
+            background-color: var(--income-color);
+            color: white;
+            box-shadow: 0 4px 12px rgba(76, 201, 240, 0.2);
+        }
+        
+        .btn-expense {
+            background-color: var(--expense-light);
+            color: var(--expense-color);
+            border: 1px solid rgba(247, 37, 133, 0.3);
+        }
+        
+        .btn-expense:hover {
+            background-color: var(--expense-color);
+            color: white;
+            box-shadow: 0 4px 12px rgba(247, 37, 133, 0.2);
+        }
+        
+        .btn-submit {
+            background-color: var(--primary-color);
+            color: white;
+            width: 100%;
+            margin-top: 20px;
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.2);
+        }
+        
+        .btn-submit:hover {
+            background-color: #3a56d4;
             transform: translateY(-2px);
         }
         
-        .btn i {
-            margin-right: 8px;
-        }
-        
         .btn-secondary {
-            background: #6c757d;
+            background-color: white;
+            color: var(--dark-color);
+            border: 1px solid var(--gray-light);
         }
         
         .btn-secondary:hover {
-            background: #5a6268;
+            background-color: var(--light-color);
+            border-color: var(--gray-color);
         }
         
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
-            margin-top: 40px;
+        .record-list {
+            list-style: none;
+            padding: 0;
         }
         
-        .solution-item {
+        .record-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--gray-light);
+            align-items: center;
+        }
+        
+        .record-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .record-amount.income {
+            color: var(--income-color);
+            font-weight: 600;
+        }
+        
+        .record-amount.expense {
+            color: var(--expense-color);
+            font-weight: 600;
+        }
+        
+        .record-category {
+            font-size: 12px;
+            color: var(--gray-color);
+            margin-top: 4px;
+        }
+        
+        .record-note {
+            font-size: 13px;
+            color: var(--gray-color);
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+        
+        .record-date {
+            font-size: 14px;
+            color: var(--gray-color);
+        }
+        
+        .record-created-date {
+            font-size: 12px;
+            color: var(--gray-color);
+            margin-top: 4px;
+        }
+        
+        .record-business-date {
+            font-size: 12px;
+        }
+        
+        .record-date-warning {
+            color: var(--warning-color);
+            font-weight: 600;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark-color);
+            font-size: 14px;
+        }
+        
+        .form-group input, 
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--gray-light);
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            font-family: 'Inter', sans-serif;
+            transition: var(--transition);
+        }
+        
+        .form-group input:focus, 
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
+        
+        .form-group textarea {
+            height: 80px;
+            resize: vertical;
+        }
+        
+        .page {
+            display: none;
+        }
+        
+        .page.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .app-nav {
+            display: flex;
+            justify-content: space-around;
             background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 12px 0;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-width: 500px;
+            margin: 0 auto;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            border-top: 1px solid var(--gray-light);
+            z-index: 10;
         }
         
-        .solution-item h3 {
-            color: #4e54c8;
-            margin-bottom: 15px;
+        .nav-item {
+            text-align: center;
+            padding: 4px 10px;
+            cursor: pointer;
+            color: var(--gray-color);
+            font-size: 12px;
+            font-weight: 500;
+            transition: var(--transition);
+            border-radius: 8px;
+        }
+        
+        .nav-item.active {
+            color: var(--primary-color);
+            background-color: var(--primary-light);
+        }
+        
+        .nav-item i {
+            display: block;
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        
+        .station-selector {
+            margin-bottom: 20px;
+        }
+        
+        .station-selector select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--gray-light);
+            border-radius: var(--border-radius);
+            background-color: white;
+            font-size: 16px;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .chart-container {
+            margin: 24px 0;
+            position: relative;
+            height: 250px;
+            background: white;
+            padding: 16px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--gray-light);
+        }
+        
+        .stats-detail {
+            margin-top: 24px;
+        }
+        
+        .stats-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--gray-light);
+        }
+        
+        .stats-label {
             display: flex;
             align-items: center;
         }
         
-        .solution-item h3 i {
-            margin-right: 10px;
-        }
-        
-        .status {
-            padding: 20px;
-            background: white;
-            border-radius: 12px;
-            margin-top: 30px;
-        }
-        
-        .status-indicator {
-            display: inline-block;
+        .stats-color {
             width: 12px;
             height: 12px;
             border-radius: 50%;
-            margin-right: 8px;
+            margin-right: 10px;
         }
         
-        .online {
-            background: #28a745;
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
         }
         
-        .offline {
-            background: #dc3545;
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 400px;
+            border-radius: var(--border-radius);
+            padding: 24px;
+            animation: modalFadeIn 0.3s;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--gray-light);
         }
         
-        footer {
-            text-align: center;
-            padding: 30px 0;
-            color: white;
-            margin-top: 40px;
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
-        @media (max-width: 768px) {
-            .grid {
-                grid-template-columns: 1fr;
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 0;
+            color: var(--dark-color);
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--gray-color);
+            transition: var(--transition);
+            padding: 4px;
+        }
+        
+        .close-modal:hover {
+            color: var(--dark-color);
+            transform: rotate(90deg);
+        }
+        
+        @media (max-width: 400px) {
+            .app-container {
+                padding: 16px;
             }
             
-            h1 {
-                font-size: 2rem;
+            button {
+                padding: 12px;
+                font-size: 14px;
             }
+        }
+        
+        .edit-btn {
+            background-color: white;
+            color: var(--primary-color);
+            padding: 6px 12px;
+            font-size: 12px;
+            border: 1px solid var(--primary-light);
+            border-radius: 6px;
+            cursor: pointer;
+            margin-left: 8px;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+        
+        .edit-btn:hover {
+            background-color: var(--primary-light);
+        }
+
+        .station-item {
+            background: white;
+            padding: 16px;
+            margin-bottom: 12px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid var(--gray-light);
+        }
+
+        .station-item-name {
+            flex-grow: 1;
+            font-weight: 500;
+        }
+
+        .station-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .alert-message {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--dark-color);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            z-index: 1000;
+            animation: fadeInOut 2.5s forwards;
+            display: none;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; top: 10px; }
+            20% { opacity: 1; top: 20px; }
+            80% { opacity: 1; top: 20px; }
+            100% { opacity: 0; top: 10px; }
+        }
+
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--gray-light);
+        }
+
+        .summary-table th, .summary-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--gray-light);
+            font-size: 13px;
+        }
+
+        .summary-table th {
+            background-color: var(--light-color);
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .summary-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .summary-table .income-cell {
+            color: var(--income-color);
+            font-weight: 600;
+        }
+
+        .summary-table .expense-cell {
+            color: var(--expense-color);
+            font-weight: 600;
+        }
+
+        .summary-table .balance-cell {
+            font-weight: 600;
+        }
+
+        .category-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--gray-light);
+            background: white;
+            margin-bottom: 8px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--gray-light);
+        }
+
+        .category-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .category-type-label {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 50px;
+            font-size: 12px;
+            margin-left: 8px;
+            font-weight: 500;
+        }
+
+        .category-type-income {
+            background-color: var(--income-light);
+            color: var(--income-color);
+        }
+
+        .category-type-expense {
+            background-color: var(--expense-light);
+            color: var(--expense-color);
+        }
+
+        h2, h3 {
+            color: var(--dark-color);
+            margin: 24px 0 16px 0;
+            font-weight: 700;
+        }
+
+        h2 {
+            font-size: 20px;
+        }
+
+        h3 {
+            font-size: 18px;
+        }
+
+.input-group {
+    display: flex;
+    flex-direction: column; /* 改为竖排 */
+    gap: 12px; /* 上下间距 */
+    align-items: stretch; /* 让元素占满宽度 */
+}
+
+
+.input-group input {
+    flex: 1; /* 占据剩余空间 */
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--gray-light);
+    border-radius: var(--border-radius);
+}
+
+/* 按钮样式 - 固定宽度 */
+.input-group button {
+    width: 100px; /* 固定宽度 */
+    padding: 12px;
+    white-space: nowrap; /* 防止文字换行 */
+    margin-top: 0px; /* 按钮离上方更近 */
+    margin-left: auto; /* 按钮自动推到右边 */
+}
+        
+.input-group select {
+    flex: 1;  /* 下拉框占1份宽度 */
+    min-width: 120px;  /* 最小宽度 */
+}
+        
+        .data-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+        
+        .data-actions button {
+            flex: 1;
+            min-width: 140px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>数据导出解决方案</h1>
-            <p class="subtitle">解决网页打包加壳后无法弹出下载窗口的问题</p>
-        </header>
+    <div class="app-container">
+        <div class="app-header">
+            <h1>水站多站点记账系统</h1>
+            <div class="current-month" id="currentMonth">2023年11月</div>
+        </div>
         
-        <div class="card">
-            <div class="card-header">
-                <i class="fas fa-database"></i>
-                <h2>数据存储与导出</h2>
+        <div class="station-selector">
+            <select id="stationSelect">
+                <option value="default">默认站点</option>
+            </select>
+        </div>
+        
+        <div class="page active" id="page-dashboard">
+            <div class="summary-card">
+                <div class="income">
+                    <span>收入</span>
+                    <strong id="totalIncome">¥0.00</strong>
+                </div>
+                <div class="expense">
+                    <span>支出</span>
+                    <strong id="totalExpense">¥0.00</strong>
+                </div>
+                <div class="balance">
+                    <span>结余</span>
+                    <strong id="totalBalance">¥0.00</strong>
+                </div>
             </div>
             
-            <p>当前已保存的数据内容：</p>
+            <div class="quick-actions">
+                <button class="btn-income" id="btnAddIncome">
+                    <i>+</i> 收入
+                </button>
+                <button class="btn-expense" id="btnAddExpense">
+                    <i>+</i> 支出
+                </button>
+            </div>
             
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>名称</th>
-                        <th>类型</th>
-                        <th>大小</th>
-                        <th>创建时间</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>1001</td>
-                        <td>用户数据报告</td>
-                        <td>CSV</td>
-                        <td>2.4 MB</td>
-                        <td>2023-06-15 10:30</td>
-                    </tr>
-                    <tr>
-                        <td>1002</td>
-                        <td>系统日志</td>
-                        <td>TXT</td>
-                        <td>4.8 MB</td>
-                        <td>2023-06-16 14:22</td>
-                    </tr>
-                    <tr>
-                        <td>1003</td>
-                        <td>性能分析</td>
-                        <td>JSON</td>
-                        <td>1.2 MB</td>
-                        <td>2023-06-17 09:15</td>
-                    </tr>
-                </tbody>
-            </table>
+            <h3>最近交易</h3>
+            <ul class="record-list" id="recordList">
+                <li>
+                    <div>
+                        <div>暂无交易记录</div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="page" id="page-records">
+            <h2>所有交易记录</h2>
+            <ul class="record-list" id="fullRecordList">
+                <li>
+                    <div>
+                        <div>暂无交易记录</div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="page" id="page-stats">
+            <h2>统计图表</h2>
+            <div class="chart-container">
+                <canvas id="statsChart"></canvas>
+            </div>
             
-            <div style="display: flex; gap: 15px; margin-top: 25px; flex-wrap: wrap;">
-                <button class="btn" onclick="saveData()">
-                    <i class="fas fa-save"></i>保存数据
-                </button>
-                <button class="btn" onclick="exportData()">
-                    <i class="fas fa-download"></i>导出数据
-                </button>
-                <button class="btn btn-secondary" onclick="clearData()">
-                    <i class="fas fa-trash-alt"></i>清除数据
-                </button>
+            <div class="stats-detail">
+                <h3>收入分类统计</h3>
+                <div id="incomeStats"></div>
+                
+                <h3>支出分类统计</h3>
+                <div id="expenseStats"></div>
             </div>
         </div>
         
-        <h2 style="text-align: center; color: white; margin: 30px 0 20px 0;">解决方案与技巧</h2>
-        
-        <div class="grid">
-            <div class="solution-item">
-                <h3><i class="fas fa-code"></i>使用Blob对象创建下载</h3>
-                <p>通过创建Blob对象和URL.createObjectURL()方法生成下载链接，可以绕过某些环境限制。</p>
+        <div class="page" id="page-settings">
+            <h2>数据管理</h2>
+            
+            <div class="data-actions">
+                <button class="btn-secondary" id="btnExportData">导出数据</button>
+                <button class="btn-secondary" id="btnImportData">导入数据</button>
             </div>
             
-            <div class="solution-item">
-                <h3><i class="fas fa-shield-alt"></i>处理权限问题</h3>
-                <p>在加壳应用中，需要确保WebView已正确配置下载权限和文件访问权限。</p>
+            <h2>站点管理</h2>
+            <div class="input-group">
+                <input type="text" id="newStationName" placeholder="输入新站点名称">
+                <button class="btn-submit" id="btnAddStation">添加站点</button>
             </div>
             
-            <div class="solution-item">
-                <h3><i class="fas fa-mobile-alt"></i>兼容移动端浏览器</h3>
-                <p>针对iOS和Android的不同浏览器行为进行兼容性处理，确保下载功能正常。</p>
+            <div id="stationList">
+                <div class="station-item">
+                    <div class="station-item-name">默认站点</div>
+                    <div class="station-actions">
+                        <button class="edit-btn">编辑</button>
+                    </div>
+                </div>
             </div>
             
-            <div class="solution-item">
-                <h3><i class="fas fa-plug"></i>使用JavaScript接口</h3>
-                <p>通过原生应用提供JavaScript接口，让网页调用原生下载功能。</p>
+            <h2>分类管理</h2>
+            <div class="input-group">
+                <input type="text" id="newCategoryName" placeholder="输入新分类名称">
+                <select id="newCategoryType">
+                    <option value="income">收入分类</option>
+                    <option value="expense">支出分类</option>
+                </select>
+                <button class="btn-submit" id="btnAddCategory">添加分类</button>
+            </div>
+            
+            <div id="categoryList">
+                <div class="category-item">
+                    <div>
+                        <span>水费收入</span>
+                        <span class="category-type-label category-type-income">收入</span>
+                    </div>
+                    <div class="category-actions">
+                        <button class="edit-btn">编辑</button>
+                    </div>
+                </div>
+                <div class="category-item">
+                    <div>
+                        <span>进货支出</span>
+                        <span class="category-type-label category-type-expense">支出</span>
+                    </div>
+                    <div class="category-actions">
+                        <button class="edit-btn">编辑</button>
+                    </div>
+                </div>
             </div>
         </div>
         
-        <div class="status">
-            <h3><span class="status-indicator online"></span>系统状态</h3>
-            <p>下载功能状态: <strong>正常</strong></p>
-            <p>存储状态: <strong>12.4 MB / 100 MB 已使用</strong></p>
-            <p>最后备份: <strong>2023-06-17 09:15</strong></p>
+        <div class="app-nav">
+            <div class="nav-item active" data-page="page-dashboard">
+                <i>📊</i>
+                <span>概览</span>
+            </div>
+            <div class="nav-item" data-page="page-records">
+                <i>📝</i>
+                <span>记录</span>
+            </div>
+            <div class="nav-item" data-page="page-stats">
+                <i>📈</i>
+                <span>统计</span>
+            </div>
+            <div class="nav-item" data-page="page-settings">
+                <i>⚙️</i>
+                <span>设置</span>
+            </div>
         </div>
     </div>
     
-    <footer>
-        <p>© 2023 数据导出解决方案 | 设计用于解决网页打包加壳后的下载问题</p>
-    </footer>
-
+    <div class="modal" id="recordModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">添加收入</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            
+            <form id="recordForm">
+                <input type="hidden" id="recordId">
+                <div class="form-group">
+                    <label for="recordType">类型</label>
+                    <select id="recordType">
+                        <option value="income">收入</option>
+                        <option value="expense">支出</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="recordAmount">金额 (¥)</label>
+                    <input type="number" id="recordAmount" step="0.01" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="recordCategory">分类</label>
+                    <select id="recordCategory" required>
+                        <option value="">请选择分类</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="recordNote">备注</label>
+                    <textarea id="recordNote"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="recordDate">日期</label>
+                    <input type="date" id="recordDate" required>
+                </div>
+                <button type="submit" class="btn-submit">保存记录</button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="alert-message" id="alertMessage"></div>
+    
     <script>
-        // 模拟数据保存功能
-        function saveData() {
-            showNotification('数据已成功保存到本地存储中', 'success');
+        // 初始化数据
+        let records = JSON.parse(localStorage.getItem('waterStationRecords')) || [];
+        let stations = JSON.parse(localStorage.getItem('waterStations')) || [{ id: 'default', name: '默认站点' }];
+        let categories = JSON.parse(localStorage.getItem('waterCategories')) || [
+            { id: '1', name: '水费收入', type: 'income' },
+            { id: '2', name: '其他收入', type: 'income' },
+            { id: '3', name: '进货支出', type: 'expense' },
+            { id: '4', name: '工资支出', type: 'expense' },
+            { id: '5', name: '房租支出', type: 'expense' },
+            { id: '6', name: '其他支出', type: 'expense' }
+        ];
+        
+        // 当前选中的站点
+        let currentStation = 'default';
+        
+        // DOM 元素
+        const stationSelect = document.getElementById('stationSelect');
+        const recordList = document.getElementById('recordList');
+        const fullRecordList = document.getElementById('fullRecordList');
+        const totalIncomeEl = document.getElementById('totalIncome');
+        const totalExpenseEl = document.getElementById('totalExpense');
+        const totalBalanceEl = document.getElementById('totalBalance');
+        const recordModal = document.getElementById('recordModal');
+        const recordForm = document.getElementById('recordForm');
+        const recordTypeSelect = document.getElementById('recordType');
+        const recordCategorySelect = document.getElementById('recordCategory');
+        const navItems = document.querySelectorAll('.nav-item');
+        const pages = document.querySelectorAll('.page');
+        const btnAddIncome = document.getElementById('btnAddIncome');
+        const btnAddExpense = document.getElementById('btnAddExpense');
+        const btnAddStation = document.getElementById('btnAddStation');
+        const newStationName = document.getElementById('newStationName');
+        const stationListEl = document.getElementById('stationList');
+        const btnAddCategory = document.getElementById('btnAddCategory');
+        const newCategoryName = document.getElementById('newCategoryName');
+        const newCategoryType = document.getElementById('newCategoryType');
+        const categoryListEl = document.getElementById('categoryList');
+        const currentMonthEl = document.getElementById('currentMonth');
+        const btnExportData = document.getElementById('btnExportData');
+        const btnImportData = document.getElementById('btnImportData');
+        
+        // 初始化应用
+        function initApp() {
+            // 设置当前月份
+            const now = new Date();
+            currentMonthEl.textContent = `${now.getFullYear()}年${now.getMonth() + 1}月`;
+            
+            // 初始化站点选择器
+            updateStationSelect();
+            
+            // 初始化分类选择器
+            updateCategorySelect();
+            
+            // 初始化分类列表
+            updateCategoryList();
+            
+            // 初始化站点列表
+            updateStationList();
+            
+            // 加载数据
+            loadData();
+            
+            // 设置事件监听器
+            setupEventListeners();
         }
         
-        // 模拟数据导出功能
-        function exportData() {
-            // 创建模拟下载
-            const blob = new Blob(["模拟导出数据内容\nID,名称,类型,大小,时间\n1001,用户数据报告,CSV,2.4MB,2023-06-15"], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 导航点击
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const pageId = item.getAttribute('data-page');
+                    navigateTo(pageId);
+                });
+            });
             
-            // 创建下载链接
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'exported_data.txt';
-            document.body.appendChild(a);
+            // 添加收入按钮
+            btnAddIncome.addEventListener('click', () => {
+                openRecordModal('income');
+            });
             
-            // 尝试程序化点击
-            a.click();
+            // 添加支出按钮
+            btnAddExpense.addEventListener('click', () => {
+                openRecordModal('expense');
+            });
             
-            // 清理
-            setTimeout(() => {
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            }, 100);
+            // 关闭模态框
+            document.querySelector('.close-modal').addEventListener('click', closeModal);
             
-            showNotification('数据导出已开始下载', 'success');
+            // 记录表单提交
+            recordForm.addEventListener('submit', saveRecord);
+            
+            // 站点选择变化
+            stationSelect.addEventListener('change', () => {
+                currentStation = stationSelect.value;
+                loadData();
+            });
+            
+            // 记录类型变化
+            recordTypeSelect.addEventListener('change', updateCategorySelect);
+            
+            // 添加站点
+            btnAddStation.addEventListener('click', addStation);
+            
+            // 添加分类
+            btnAddCategory.addEventListener('click', addCategory);
+            
+            // 导出数据
+            btnExportData.addEventListener('click', exportData);
+            
+            // 导入数据
+            btnImportData.addEventListener('click', importData);
         }
         
-        // 清除数据
-        function clearData() {
-            if (confirm('确定要清除所有数据吗？此操作不可恢复。')) {
-                showNotification('所有数据已清除', 'info');
+        // 导航到指定页面
+        function navigateTo(pageId) {
+            // 更新导航
+            navItems.forEach(item => {
+                if (item.getAttribute('data-page') === pageId) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+            
+            // 更新页面显示
+            pages.forEach(page => {
+                if (page.id === pageId) {
+                    page.classList.add('active');
+                    
+                    // 如果是统计页面，更新图表
+                    if (pageId === 'page-stats') {
+                        updateStatsChart();
+                    }
+                } else {
+                    page.classList.remove('active');
+                }
+            });
+        }
+        
+        // 打开记录模态框
+        function openRecordModal(type, record = null) {
+            document.getElementById('modalTitle').textContent = record ? '编辑记录' : `添加${type === 'income' ? '收入' : '支出'}`;
+            document.getElementById('recordType').value = type;
+            document.getElementById('recordAmount').value = record ? record.amount : '';
+            document.getElementById('recordNote').value = record ? record.note : '';
+            document.getElementById('recordDate').value = record ? record.date : new Date().toISOString().split('T')[0];
+            document.getElementById('recordId').value = record ? record.id : '';
+            
+            // 更新分类选择
+            updateCategorySelect();
+            
+            if (record) {
+                document.getElementById('recordCategory').value = record.category;
+            }
+            
+            recordModal.style.display = 'flex';
+        }
+        
+        // 关闭模态框
+        function closeModal() {
+            recordModal.style.display = 'none';
+            recordForm.reset();
+        }
+        
+        // 更新分类选择器
+        function updateCategorySelect() {
+            const type = recordTypeSelect.value;
+            recordCategorySelect.innerHTML = '<option value="">请选择分类</option>';
+            
+            categories
+                .filter(cat => cat.type === type)
+                .forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat.id;
+                    option.textContent = cat.name;
+                    recordCategorySelect.appendChild(option);
+                });
+        }
+        
+        // 保存记录
+        function saveRecord(e) {
+            e.preventDefault();
+            
+            const recordId = document.getElementById('recordId').value;
+            const type = document.getElementById('recordType').value;
+            const amount = parseFloat(document.getElementById('recordAmount').value);
+            const category = document.getElementById('recordCategory').value;
+            const note = document.getElementById('recordNote').value;
+            const date = document.getElementById('recordDate').value;
+            
+            if (recordId) {
+                // 更新现有记录
+                const index = records.findIndex(record => record.id === recordId);
+                if (index !== -1) {
+                    records[index] = {
+                        ...records[index],
+                        type,
+                        amount,
+                        category,
+                        note,
+                        date,
+                        station: currentStation
+                    };
+                }
+            } else {
+                // 添加新记录
+                const newRecord = {
+                    id: Date.now().toString(),
+                    type,
+                    amount,
+                    category,
+                    note,
+                    date,
+                    station: currentStation,
+                    createdAt: new Date().toISOString()
+                };
+                
+                records.unshift(newRecord);
+            }
+            
+            // 保存到本地存储
+            saveData();
+            
+            // 关闭模态框
+            closeModal();
+            
+            // 重新加载数据
+            loadData();
+            
+            // 显示成功消息
+            showAlert('记录已保存');
+        }
+        
+        // 加载数据
+        function loadData() {
+            // 过滤当前站点的记录
+            const stationRecords = records.filter(record => record.station === currentStation);
+            
+            // 更新摘要
+            updateSummary(stationRecords);
+            
+            // 更新记录列表
+            updateRecordList(stationRecords);
+            
+            // 更新完整记录列表
+            updateFullRecordList(stationRecords);
+        }
+        
+        // 更新摘要
+        function updateSummary(records) {
+            const income = records
+                .filter(record => record.type === 'income')
+                .reduce((sum, record) => sum + record.amount, 0);
+                
+            const expense = records
+                .filter(record => record.type === 'expense')
+                .reduce((sum, record) => sum + record.amount, 0);
+                
+            const balance = income - expense;
+            
+            totalIncomeEl.textContent = `¥${income.toFixed(2)}`;
+            totalExpenseEl.textContent = `¥${expense.toFixed(2)}`;
+            totalBalanceEl.textContent = `¥${balance.toFixed(2)}`;
+        }
+        
+        // 更新记录列表
+        function updateRecordList(records) {
+            const recentRecords = records.slice(0, 5);
+            
+            if (recentRecords.length === 0) {
+                recordList.innerHTML = '<li><div><div>暂无交易记录</div></div></li>';
+                return;
+            }
+            
+            recordList.innerHTML = '';
+            recentRecords.forEach(record => {
+                const li = document.createElement('li');
+                
+                const category = categories.find(cat => cat.id === record.category);
+                const categoryName = category ? category.name : '未知分类';
+                
+                li.innerHTML = `
+                    <div>
+                        <div>${categoryName}</div>
+                        <div class="record-note">${record.note || '无备注'}</div>
+                        <div class="record-created-date">添加于 ${formatDate(record.createdAt)}</div>
+                    </div>
+                    <div>
+                        <div class="record-amount ${record.type}">${record.type === 'income' ? '+' : '-'}¥${record.amount.toFixed(2)}</div>
+                        <div class="record-date">${record.date}</div>
+                    </div>
+                `;
+                
+                recordList.appendChild(li);
+            });
+        }
+        
+        // 更新完整记录列表
+        function updateFullRecordList(records) {
+            if (records.length === 0) {
+                fullRecordList.innerHTML = '<li><div><div>暂无交易记录</div></div></li>';
+                return;
+            }
+            
+            fullRecordList.innerHTML = '';
+            records.forEach(record => {
+                const li = document.createElement('li');
+                
+                const category = categories.find(cat => cat.id === record.category);
+                const categoryName = category ? category.name : '未知分类';
+                
+                li.innerHTML = `
+                    <div>
+                        <div>${categoryName}</div>
+                        <div class="record-note">${record.note || '无备注'}</div>
+                        <div class="record-created-date">添加于 ${formatDate(record.createdAt)}</div>
+                    </div>
+                    <div>
+                        <div class="record-amount ${record.type}">${record.type === 'income' ? '+' : '-'}¥${record.amount.toFixed(2)}</div>
+                        <div class="record-date">${record.date}</div>
+                    </div>
+                    <button class="edit-btn" data-id="${record.id}">编辑</button>
+                `;
+                
+                // 添加编辑按钮事件
+                li.querySelector('.edit-btn').addEventListener('click', () => {
+                    openRecordModal(record.type, record);
+                });
+                
+                fullRecordList.appendChild(li);
+            });
+        }
+        
+        // 更新统计图表
+        function updateStatsChart() {
+            const ctx = document.getElementById('statsChart').getContext('2d');
+            const stationRecords = records.filter(record => record.station === currentStation);
+            
+            // 按分类分组收入
+            const incomeByCategory = {};
+            const expenseByCategory = {};
+            
+            stationRecords.forEach(record => {
+                const category = categories.find(cat => cat.id === record.category);
+                const categoryName = category ? category.name : '未知分类';
+                
+                if (record.type === 'income') {
+                    if (!incomeByCategory[categoryName]) {
+                        incomeByCategory[categoryName] = 0;
+                    }
+                    incomeByCategory[categoryName] += record.amount;
+                } else {
+                    if (!expenseByCategory[categoryName]) {
+                        expenseByCategory[categoryName] = 0;
+                    }
+                    expenseByCategory[categoryName] += record.amount;
+                }
+            });
+            
+            // 准备图表数据
+            const incomeLabels = Object.keys(incomeByCategory);
+            const incomeData = Object.values(incomeByCategory);
+            
+            const expenseLabels = Object.keys(expenseByCategory);
+            const expenseData = Object.values(expenseByCategory);
+            
+            // 如果有现有图表，销毁它
+            if (window.statsChartInstance) {
+                window.statsChartInstance.destroy();
+            }
+            
+            // 创建新图表
+            window.statsChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: [...incomeLabels, ...expenseLabels],
+                    datasets: [{
+                        data: [...incomeData, ...expenseData],
+                        backgroundColor: [
+                            '#4cc9f0', '#4895ef', '#4361ee', '#3f37c9', '#560bad',
+                            '#f72585', '#b5179e', '#7209b7', '#480ca8', '#3a0ca3'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                        },
+                        title: {
+                            display: true,
+                            text: '收支分类统计'
+                        }
+                    }
+                }
+            });
+            
+            // 更新统计详情
+            updateStatsDetail(incomeByCategory, expenseByCategory);
+        }
+        
+        // 更新统计详情
+        function updateStatsDetail(incomeByCategory, expenseByCategory) {
+            const incomeStatsEl = document.getElementById('incomeStats');
+            const expenseStatsEl = document.getElementById('expenseStats');
+            
+            // 收入统计
+            incomeStatsEl.innerHTML = '';
+            for (const [category, amount] of Object.entries(incomeByCategory)) {
+                const div = document.createElement('div');
+                div.className = 'stats-item';
+                div.innerHTML = `
+                    <div class="stats-label">
+                        <span class="stats-color" style="background-color: #4cc9f0"></span>
+                        ${category}
+                    </div>
+                    <div class="record-amount income">¥${amount.toFixed(2)}</div>
+                `;
+                incomeStatsEl.appendChild(div);
+            }
+            
+            if (Object.keys(incomeByCategory).length === 0) {
+                incomeStatsEl.innerHTML = '<div class="stats-item">暂无收入数据</div>';
+            }
+            
+            // 支出统计
+            expenseStatsEl.innerHTML = '';
+            for (const [category, amount] of Object.entries(expenseByCategory)) {
+                const div = document.createElement('div');
+                div.className = 'stats-item';
+                div.innerHTML = `
+                    <div class="stats-label">
+                        <span class="stats-color" style="background-color: #f72585"></span>
+                        ${category}
+                    </div>
+                    <div class="record-amount expense">¥${amount.toFixed(2)}</div>
+                `;
+                expenseStatsEl.appendChild(div);
+            }
+            
+            if (Object.keys(expenseByCategory).length === 0) {
+                expenseStatsEl.innerHTML = '<div class="stats-item">暂无支出数据</div>';
             }
         }
         
-        // 显示通知
-        function showNotification(message, type) {
-            // 在实际应用中这里会实现一个漂亮的Toast通知
-            alert(message);
+        // 添加站点
+        function addStation() {
+            const name = newStationName.value.trim();
+            
+            if (!name) {
+                showAlert('请输入站点名称');
+                return;
+            }
+            
+            const newStation = {
+                id: Date.now().toString(),
+                name: name
+            };
+            
+            stations.push(newStation);
+            saveData();
+            
+            // 更新站点选择器和列表
+            updateStationSelect();
+            updateStationList();
+            
+            // 清空输入框
+            newStationName.value = '';
+            
+            showAlert('站点已添加');
         }
+        
+        // 更新站点选择器
+        function updateStationSelect() {
+            stationSelect.innerHTML = '';
+            
+            stations.forEach(station => {
+                const option = document.createElement('option');
+                option.value = station.id;
+                option.textContent = station.name;
+                option.selected = station.id === currentStation;
+                stationSelect.appendChild(option);
+            });
+        }
+        
+        // 更新站点列表
+        function updateStationList() {
+            stationListEl.innerHTML = '';
+            
+            stations.forEach(station => {
+                const div = document.createElement('div');
+                div.className = 'station-item';
+                div.innerHTML = `
+                    <div class="station-item-name">${station.name}</div>
+                    <div class="station-actions">
+                        <button class="edit-btn">编辑</button>
+                    </div>
+                `;
+                
+                stationListEl.appendChild(div);
+            });
+        }
+        
+        // 添加分类
+        function addCategory() {
+            const name = newCategoryName.value.trim();
+            const type = newCategoryType.value;
+            
+            if (!name) {
+                showAlert('请输入分类名称');
+                return;
+            }
+            
+            const newCategory = {
+                id: Date.now().toString(),
+                name: name,
+                type: type
+            };
+            
+            categories.push(newCategory);
+            saveData();
+            
+            // 更新分类列表和选择器
+            updateCategoryList();
+            updateCategorySelect();
+            
+            // 清空输入框
+            newCategoryName.value = '';
+            
+            showAlert('分类已添加');
+        }
+        
+        // 更新分类列表
+        function updateCategoryList() {
+            categoryListEl.innerHTML = '';
+            
+            categories.forEach(category => {
+                const div = document.createElement('div');
+                div.className = 'category-item';
+                div.innerHTML = `
+                    <div>
+                        <span>${category.name}</span>
+                        <span class="category-type-label category-type-${category.type}">${category.type === 'income' ? '收入' : '支出'}</span>
+                    </div>
+                    <div class="category-actions">
+                        <button class="edit-btn">编辑</button>
+                    </div>
+                `;
+                
+                categoryListEl.appendChild(div);
+            });
+        }
+        
+        // 保存数据到本地存储
+        function saveData() {
+            localStorage.setItem('waterStationRecords', JSON.stringify(records));
+            localStorage.setItem('waterStations', JSON.stringify(stations));
+            localStorage.setItem('waterCategories', JSON.stringify(categories));
+        }
+        
+        // 显示提示消息
+        function showAlert(message) {
+            const alertEl = document.getElementById('alertMessage');
+            alertEl.textContent = message;
+            alertEl.style.display = 'block';
+            
+            setTimeout(() => {
+                alertEl.style.display = 'none';
+            }, 2500);
+        }
+        
+        // 格式化日期
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+        }
+        
+        // 导出数据
+        function exportData() {
+            const data = {
+                records: records,
+                stations: stations,
+                categories: categories,
+                exportDate: new Date().toISOString()
+            };
+            
+            const dataStr = JSON.stringify(data, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            // 在安卓APP环境中，使用文件插件保存文件
+            if (window.cordova && window.cordova.plugins && window.cordova.plugins.file) {
+                // 使用Cordova文件插件保存文件
+                window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs) {
+                    fs.root.getFile('waterStationData.json', {create: true}, function(fileEntry) {
+                        fileEntry.createWriter(function(fileWriter) {
+                            fileWriter.onwriteend = function() {
+                                showAlert('数据已导出到 waterStationData.json');
+                            };
+                            
+                            fileWriter.onerror = function(e) {
+                                console.error('写入文件错误: ' + e.toString());
+                                showAlert('导出失败: ' + e.toString());
+                            };
+                            
+                            fileWriter.write(dataBlob);
+                        }, function(error) {
+                            console.error('创建文件写入器错误: ' + error.code);
+                            showAlert('导出失败: ' + error.code);
+                        });
+                    }, function(error) {
+                        console.error('获取文件错误: ' + error.code);
+                        showAlert('导出失败: ' + error.code);
+                    });
+                }, function(error) {
+                    console.error('请求文件系统错误: ' + error.code);
+                    showAlert('导出失败: ' + error.code);
+                });
+            } else {
+                // 在浏览器环境中，使用下载方式
+                const url = URL.createObjectURL(dataBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'waterStationData.json';
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    showAlert('数据已导出');
+                }, 100);
+            }
+        }
+        
+        // 导入数据
+        function importData() {
+            // 在安卓APP环境中，使用文件插件读取文件
+            if (window.cordova && window.cordova.plugins && window.cordova.plugins.file) {
+                // 使用Cordova文件插件选择并读取文件
+                window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function(dirEntry) {
+                    dirEntry.getFile('waterStationData.json', {}, function(fileEntry) {
+                        fileEntry.file(function(file) {
+                            const reader = new FileReader();
+                            
+                            reader.onloadend = function(e) {
+                                try {
+                                    const data = JSON.parse(this.result);
+                                    if (data.records && data.stations && data.categories) {
+                                        // 确认是否覆盖现有数据
+                                        if (confirm('导入数据将覆盖当前所有数据，确定要继续吗？')) {
+                                            records = data.records;
+                                            stations = data.stations;
+                                            categories = data.categories;
+                                            
+                                            saveData();
+                                            loadData();
+                                            updateStationSelect();
+                                            updateStationList();
+                                            updateCategoryList();
+                                            
+                                            showAlert('数据导入成功');
+                                        }
+                                    } else {
+                                        showAlert('无效的数据文件格式');
+                                    }
+                                } catch (e) {
+                                    console.error('解析JSON错误: ' + e);
+                                    showAlert('解析数据文件失败: ' + e);
+                                }
+                            };
+                            
+                            reader.readAsText(file);
+                        }, function(error) {
+                            console.error('读取文件错误: ' + error.code);
+                            showAlert('读取文件失败: ' + error.code);
+                        });
+                    }, function(error) {
+                        console.error('获取文件错误: ' + error.code);
+                        showAlert('未找到数据文件，请先导出数据');
+                    });
+                }, function(error) {
+                    console.error('解析文件URL错误: ' + error.code);
+                    showAlert('访问文件系统失败: ' + error.code);
+                });
+            } else {
+                // 在浏览器环境中，使用文件输入方式
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.json';
+                
+                input.onchange = function(e) {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        try {
+                            const data = JSON.parse(e.target.result);
+                            if (data.records && data.stations && data.categories) {
+                                // 确认是否覆盖现有数据
+                                if (confirm('导入数据将覆盖当前所有数据，确定要继续吗？')) {
+                                    records = data.records;
+                                    stations = data.stations;
+                                    categories = data.categories;
+                                    
+                                    saveData();
+                                    loadData();
+                                    updateStationSelect();
+                                    updateStationList();
+                                    updateCategoryList();
+                                    
+                                    showAlert('数据导入成功');
+                                }
+                            } else {
+                                showAlert('无效的数据文件格式');
+                            }
+                        } catch (e) {
+                            console.error('解析JSON错误: ' + e);
+                            showAlert('解析数据文件失败: ' + e);
+                        }
+                    };
+                    
+                    reader.readAsText(file);
+                };
+                
+                input.click();
+            }
+        }
+        
+        // 初始化应用
+        initApp();
     </script>
 </body>
 </html>
