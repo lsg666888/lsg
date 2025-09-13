@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>水站多站点记账系统</title>
+    <title>22水站多站点记账系统</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -29,6 +29,7 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            -webkit-tap-highlight-color: transparent;
         }
         
         body {
@@ -38,6 +39,7 @@
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            touch-action: manipulation;
         }
         
         .app-container {
@@ -132,6 +134,9 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
+            -webkit-user-select: none;
+            user-select: none;
+            min-height: 44px;
         }
         
         .btn-income {
@@ -140,7 +145,7 @@
             border: 1px solid rgba(76, 201, 240, 0.3);
         }
         
-        .btn-income:hover {
+        .btn-income:hover, .btn-income:active {
             background-color: var(--income-color);
             color: white;
             box-shadow: 0 4px 12px rgba(76, 201, 240, 0.2);
@@ -152,7 +157,7 @@
             border: 1px solid rgba(247, 37, 133, 0.3);
         }
         
-        .btn-expense:hover {
+        .btn-expense:hover, .btn-expense:active {
             background-color: var(--expense-color);
             color: white;
             box-shadow: 0 4px 12px rgba(247, 37, 133, 0.2);
@@ -166,7 +171,7 @@
             box-shadow: 0 4px 12px rgba(67, 97, 238, 0.2);
         }
         
-        .btn-submit:hover {
+        .btn-submit:hover, .btn-submit:active {
             background-color: #3a56d4;
             transform: translateY(-2px);
         }
@@ -177,7 +182,7 @@
             border: 1px solid var(--gray-light);
         }
         
-        .btn-secondary:hover {
+        .btn-secondary:hover, .btn-secondary:active {
             background-color: var(--light-color);
             border-color: var(--gray-color);
         }
@@ -318,6 +323,13 @@
             font-weight: 500;
             transition: var(--transition);
             border-radius: 8px;
+            -webkit-user-select: none;
+            user-select: none;
+            min-height: 44px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
         
         .nav-item.active {
@@ -460,9 +472,12 @@
             margin-left: 8px;
             font-weight: 500;
             transition: var(--transition);
+            -webkit-user-select: none;
+            user-select: none;
+            min-height: 32px;
         }
         
-        .edit-btn:hover {
+        .edit-btn:hover, .edit-btn:active {
             background-color: var(--primary-light);
         }
 
@@ -542,7 +557,7 @@
 
         .summary-table .income-cell {
             color: var(--income-color);
-            font-weight: 600;
+            fontWeight: 600;
         }
 
         .summary-table .expense-cell {
@@ -605,35 +620,33 @@
             font-size: 18px;
         }
 
-.input-group {
-    display: flex;
-    flex-direction: column; /* 改为竖排 */
-    gap: 12px; /* 上下间距 */
-    align-items: stretch; /* 让元素占满宽度 */
-}
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: stretch;
+        }
 
+        .input-group input {
+            flex: 1;
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--gray-light);
+            border-radius: var(--border-radius);
+        }
 
-.input-group input {
-    flex: 1; /* 占据剩余空间 */
-    width: 100%;
-    padding: 12px;
-    border: 1px solid var(--gray-light);
-    border-radius: var(--border-radius);
-}
-
-/* 按钮样式 - 固定宽度 */
-.input-group button {
-    width: 100px; /* 固定宽度 */
-    padding: 12px;
-    white-space: nowrap; /* 防止文字换行 */
-    margin-top: 0px; /* 按钮离上方更近 */
-    margin-left: auto; /* 按钮自动推到右边 */
-}
+        .input-group button {
+            width: 100px;
+            padding: 12px;
+            white-space: nowrap;
+            margin-top: 0px;
+            margin-left: auto;
+        }
         
-.input-group select {
-    flex: 1;  /* 下拉框占1份宽度 */
-    min-width: 120px;  /* 最小宽度 */
-}
+        .input-group select {
+            flex: 1;
+            min-width: 120px;
+        }
         
         .data-actions {
             display: flex;
@@ -647,7 +660,6 @@
             min-width: 120px;
         }
 
-        /* 美化后的筛选选项卡样式 */
         .filter-tabs {
             display: flex;
             background: white;
@@ -670,6 +682,12 @@
             transition: var(--transition);
             position: relative;
             border-radius: 8px;
+            -webkit-user-select: none;
+            user-select: none;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .filter-tab.active {
@@ -688,41 +706,38 @@
             background-color: var(--gray-light);
         }
 
-.filter-content {
-    display: none;
-    padding: 16px 20px;                     /* 内边距稍大 */
-    background: #fff;                        /* 白色卡片 */
-    border-radius: 12px;                     /* 圆角更明显 */
-    box-shadow: 0 6px 18px rgba(0,0,0,0.08); /* 阴影加大，更立体 */
-    border: 1px solid #e0e0e0;              /* 边框颜色淡灰，更精致 */
-    margin-bottom: 20px;                     /* 底部间距略大 */
-    transition: all 0.3s ease;               /* 动画平滑 */
-}
+        .filter-content {
+            display: none;
+            padding: 16px 20px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+            border: 1px solid #e0e0e0;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
 
-.filter-content.active {
-    display: block;
-    animation: fadeIn 0.3s;
-}
+        .filter-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
 
-/* 二级控件样式美化 */
-.filter-content select,
-.filter-content input[type="month"] {
-    width: 100%;
-    padding: 10px 14px;                      /* 内边距更舒服 */
-    font-size: 14px;
-    border: 1px solid #ccc;                  /* 边框颜色统一 */
-    border-radius: 8px;                       /* 圆角 */
-    outline: none;
-    transition: all 0.2s;
-}
+        .filter-content select,
+        .filter-content input[type="month"] {
+            width: 100%;
+            padding: 10px 14px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            outline: none;
+            transition: all 0.2s;
+        }
 
-/* 聚焦高亮 */
-.filter-content select:focus,
-.filter-content input[type="month"]:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 6px rgba(0,123,255,0.3);
-}
-
+        .filter-content select:focus,
+        .filter-content input[type="month"]:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 6px rgba(0,123,255,0.3);
+        }
 
         .filter-options {
             display: flex;
@@ -774,9 +789,50 @@
         .date-warning {
             background-color: rgba(255, 0, 0, 0.05);
         }
+        
+        /* 新增样式 */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            display: none;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .touch-feedback {
+            transition: opacity 0.2s;
+        }
+        
+        .touch-feedback:active {
+            opacity: 0.7;
+        }
     </style>
 </head>
 <body>
+    <div class="loading" id="loading">
+        <div class="loading-spinner"></div>
+    </div>
+
     <div class="alert-message" id="alertMessage"></div>
 
     <div class="app-container">
@@ -808,11 +864,11 @@
             </div>
             
             <div class="quick-actions">
-                <button class="btn-income" id="btnAddIncome">
+                <button class="btn-income touch-feedback" id="btnAddIncome">
                     <span>+</span>
                     <span>记收入</span>
                 </button>
-                <button class="btn-expense" id="btnAddExpense">
+                <button class="btn-expense touch-feedback" id="btnAddExpense">
                     <span>-</span>
                     <span>记支出</span>
                 </button>
@@ -827,14 +883,12 @@
         </div>
         
         <div class="page" id="recordsPage">
-            <!-- 美化后的筛选选项卡 -->
             <div class="filter-tabs">
-                <div class="filter-tab active" data-filter="type">类型</div>
-                <div class="filter-tab" data-filter="category">分类</div>
-                <div class="filter-tab" data-filter="date">日期</div>
+                <div class="filter-tab active touch-feedback" data-filter="type">类型</div>
+                <div class="filter-tab touch-feedback" data-filter="category">分类</div>
+                <div class="filter-tab touch-feedback" data-filter="date">日期</div>
             </div>
             
-            <!-- 类型筛选内容 -->
             <div class="filter-content active" id="typeFilterContent">
                 <select id="recordTypeFilter">
                     <option value="all">所有类型</option>
@@ -843,14 +897,12 @@
                 </select>
             </div>
             
-            <!-- 分类筛选内容 -->
             <div class="filter-content" id="categoryFilterContent">
                 <select id="recordCategoryFilter">
                     <option value="all">所有分类</option>
                 </select>
             </div>
             
-            <!-- 日期筛选内容 -->
             <div class="filter-content" id="dateFilterContent">
                 <input type="month" id="recordMonthFilter" value="选择日期">
             </div>
@@ -911,7 +963,7 @@
                 <label>添加新水站</label>
                 <div class="input-group">
                     <input type="text" id="newStationName" placeholder="输入水站名称">
-                    <button class="btn-submit" id="btnAddStation">添加</button>
+                    <button class="btn-submit touch-feedback" id="btnAddStation">添加</button>
                 </div>
             </div>
             
@@ -928,7 +980,7 @@
                         <option value="expense">支出类型</option>
                     </select>
                     <input type="text" id="newCategoryName" placeholder="输入类型名称">
-                    <button class="btn-submit" id="btnAddCategory">添加</button>
+                    <button class="btn-submit touch-feedback" id="btnAddCategory">添加</button>
                 </div>
             </div>
             
@@ -943,26 +995,26 @@
             </ul>
             
             <div class="data-actions">
-                <button class="btn-secondary" id="btnExportData">导出数据</button>
-                <button class="btn-secondary" id="btnImportData">导入数据</button>
-                <button class="btn-expense" id="btnClearData">清空数据</button>
+                <button class="btn-secondary touch-feedback" id="btnExportData">导出数据</button>
+                <button class="btn-secondary touch-feedback" id="btnImportData">导入数据</button>
+                <button class="btn-expense touch-feedback" id="btnClearData">清空数据</button>
             </div>
         </div>
         
         <div class="app-nav">
-            <div class="nav-item active" data-page="homePage">
+            <div class="nav-item active touch-feedback" data-page="homePage">
                 <i>🏠</i>
                 <span>首页</span>
             </div>
-            <div class="nav-item" data-page="recordsPage">
+            <div class="nav-item touch-feedback" data-page="recordsPage">
                 <i>📝</i>
                 <span>记录</span>
             </div>
-            <div class="nav-item" data-page="statsPage">
+            <div class="nav-item touch-feedback" data-page="statsPage">
                 <i>📊</i>
                 <span>统计</span>
             </div>
-            <div class="nav-item" data-page="settingsPage">
+            <div class="nav-item touch-feedback" data-page="settingsPage">
                 <i>⚙️</i>
                 <span>设置</span>
             </div>
@@ -1014,7 +1066,7 @@
                 <textarea id="recordNote" placeholder="可选备注"></textarea>
             </div>
             
-            <button class="btn-submit" id="btnSaveRecord">保存记录</button>
+            <button class="btn-submit touch-feedback" id="btnSaveRecord">保存记录</button>
         </div>
     </div>
     
@@ -1037,7 +1089,7 @@
                 </label>
             </div>
             
-            <button class="btn-submit" id="btnConfirmImport">导入</button>
+            <button class="btn-submit touch-feedback" id="btnConfirmImport">导入</button>
         </div>
     </div>
     
@@ -1054,7 +1106,7 @@
                 <input type="hidden" id="editStationId">
             </div>
             
-            <button class="btn-submit" id="btnSaveStationName">保存</button>
+            <button class="btn-submit touch-feedback" id="btnSaveStationName">保存</button>
         </div>
     </div>
 
@@ -1079,12 +1131,22 @@
                 <input type="hidden" id="editCategoryId">
             </div>
             
-            <button class="btn-submit" id="btnSaveCategory">保存</button>
-            <button class="btn-expense" id="btnDeleteCategory">删除</button>
+            <button class="btn-submit touch-feedback" id="btnSaveCategory">保存</button>
+            <button class="btn-expense touch-feedback" id="btnDeleteCategory">删除</button>
         </div>
     </div>
     
     <script>
+        // 添加安卓环境检测
+        const isAndroid = /Android/i.test(navigator.userAgent);
+        
+        // 添加错误处理
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            console.error('Error: ' + msg + '\nURL: ' + url + '\nLine: ' + lineNo);
+            App.showAlert('发生错误: ' + msg);
+            return false;
+        };
+        
         const App = {
             data: {
                 stations: JSON.parse(localStorage.getItem('waterStations')) || [],
@@ -1103,27 +1165,63 @@
             },
             
             showAlert(message) {
-                const alertEl = document.getElementById('alertMessage');
-                alertEl.textContent = message;
-                alertEl.style.display = 'block';
-                
-                setTimeout(() => {
-                    alertEl.style.display = 'none';
-                }, 2500);
+                try {
+                    const alertEl = document.getElementById('alertMessage');
+                    alertEl.textContent = message;
+                    alertEl.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        alertEl.style.display = 'none';
+                    }, 2500);
+                } catch (e) {
+                    console.error('Alert error:', e);
+                }
             },
             
             init() {
-                this.setCurrentDate();
-                this.loadStations();
-                this.setupEventListeners();
-                
-                if (this.data.stations.length === 0) {
-                    this.showPage('settingsPage');
-                } else {
-                    this.selectStation('');
-                }
+                try {
+                    this.setCurrentDate();
+                    this.loadStations();
+                    this.setupEventListeners();
+                    
+                    if (this.data.stations.length === 0) {
+                        this.showPage('settingsPage');
+                    } else {
+                        this.selectStation('');
+                    }
 
-                this.updateCategoryLists();
+                    this.updateCategoryLists();
+                    
+                    // 安卓特定初始化
+                    if (isAndroid) {
+                        this.androidEnhancements();
+                    }
+                } catch (e) {
+                    console.error('初始化错误:', e);
+                    this.showAlert('初始化失败: ' + e.message);
+                }
+            },
+            
+            androidEnhancements() {
+                // 添加安卓特定的优化
+                console.log("安卓设备优化已启用");
+                
+                // 防止双击缩放
+                let lastTouchEnd = 0;
+                document.addEventListener('touchend', function(event) {
+                    const now = (new Date()).getTime();
+                    if (now - lastTouchEnd <= 300) {
+                        event.preventDefault();
+                    }
+                    lastTouchEnd = now;
+                }, false);
+                
+                // 防止滚动传播
+                document.addEventListener('touchmove', function(event) {
+                    if (event.scale !== undefined && event.scale !== 1) {
+                        event.preventDefault();
+                    }
+                }, false);
             },
             
             setCurrentDate() {
@@ -1255,91 +1353,86 @@
                 localStorage.setItem('recordTypes', JSON.stringify(this.data.recordTypes));
             },
             
+            exportData() {
+                const data = {
+                    stations: this.data.stations,
+                    records: this.data.records,
+                    recordTypes: this.data.recordTypes,
+                    exportedAt: new Date().toISOString()
+                };
 
-    exportData() {
-        const data = {
-            stations: this.data.stations,
-            records: this.data.records,
-            recordTypes: this.data.recordTypes,
-            exportedAt: new Date().toISOString()
-        };
+                const dataStr = JSON.stringify(data, null, 2);
+                const filename = `water_station_data_${new Date().toLocaleDateString('en-US')}.json`;
 
-        const dataStr = JSON.stringify(data, null, 2);
-        const filename = `water_station_data_${new Date().toLocaleDateString('en-US')}.json`;
+                if (window.Android && typeof window.Android.saveFile === "function") {
+                    window.Android.saveFile(filename, dataStr);
+                    this.showAlert('数据已导出到本地');
+                } else {
+                    const blob = new Blob([dataStr], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    setTimeout(() => {
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    }, 100);
+                    this.showAlert('数据导出成功');
+                }
+            },
+            
+            importData(file, override) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const importedData = JSON.parse(e.target.result);
+                        if (override) {
+                            this.data.stations = importedData.stations || [];
+                            this.data.records = importedData.records || {};
+                            this.data.recordTypes = importedData.recordTypes || { income: [], expense: [] };
+                        } else {
+                            const existingStationIds = this.data.stations.map(s => s.id);
+                            const newStations = importedData.stations.filter(s => !existingStationIds.includes(s.id));
+                            this.data.stations = [...this.data.stations, ...newStations];
 
-        if (window.Android && typeof window.Android.saveFile === "function") {
-            window.Android.saveFile(filename, dataStr);
-            this.showAlert('数据已导出到本地');
-        } else {
-            const blob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            setTimeout(() => {
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            }, 100);
-            this.showAlert('数据导出成功');
-        }
-    },
+                            for (const stationId in importedData.records) {
+                                if (this.data.records[stationId]) {
+                                    const existingRecordIds = this.data.records[stationId].map(r => r.id);
+                                    const newRecords = importedData.records[stationId].filter(r => !existingRecordIds.includes(r.id));
+                                    this.data.records[stationId] = [...this.data.records[stationId], ...newRecords];
+                                } else {
+                                    this.data.records[stationId] = importedData.records[stationId];
+                                }
+                            }
 
+                            if (importedData.recordTypes) {
+                                const existingIncomeIds = this.data.recordTypes.income.map(c => c.id);
+                                const newIncomeCategories = importedData.recordTypes.income.filter(c => !existingIncomeIds.includes(c.id));
+                                this.data.recordTypes.income = [...this.data.recordTypes.income, ...newIncomeCategories];
 
-    importDataFromApp(jsonStr, override) {
-        try {
-            const importedData = JSON.parse(jsonStr);
-            if (override) {
-                this.data.stations = importedData.stations || [];
-                this.data.records = importedData.records || {};
-                this.data.recordTypes = importedData.recordTypes || { income: [], expense: [] };
-            } else {
-                const existingStationIds = this.data.stations.map(s => s.id);
-                const newStations = importedData.stations.filter(s => !existingStationIds.includes(s.id));
-                this.data.stations = [...this.data.stations, ...newStations];
+                                const existingExpenseIds = this.data.recordTypes.expense.map(c => c.id);
+                                const newExpenseCategories = importedData.recordTypes.expense.filter(c => !existingExpenseIds.includes(c.id));
+                                this.data.recordTypes.expense = [...this.data.recordTypes.expense, ...newExpenseCategories];
+                            }
+                        }
 
-                for (const stationId in importedData.records) {
-                    if (this.data.records[stationId]) {
-                        const existingRecordIds = this.data.records[stationId].map(r => r.id);
-                        const newRecords = importedData.records[stationId].filter(r => !existingRecordIds.includes(r.id));
-                        this.data.records[stationId] = [...this.data.records[stationId], ...newRecords];
-                    } else {
-                        this.data.records[stationId] = importedData.records[stationId];
+                        this.saveStations();
+                        this.saveRecords();
+                        this.saveRecordTypes();
+                        this.loadStations();
+                        this.updateUI();
+                        this.updateCategoryLists();
+                        this.showAlert('数据导入成功');
+                        this.hideModal();
+                    } catch (error) {
+                        alert('导入失败：文件格式不正确');
+                        console.error(error);
                     }
-                }
-
-                if (importedData.recordTypes) {
-                    const existingIncomeIds = this.data.recordTypes.income.map(c => c.id);
-                    const newIncomeCategories = importedData.recordTypes.income.filter(c => !existingIncomeIds.includes(c.id));
-                    this.data.recordTypes.income = [...this.data.recordTypes.income, ...newIncomeCategories];
-
-                    const existingExpenseIds = this.data.recordTypes.expense.map(c => c.id);
-                    const newExpenseCategories = importedData.recordTypes.expense.filter(c => !existingExpenseIds.includes(c.id));
-                    this.data.recordTypes.expense = [...this.data.recordTypes.expense, ...newExpenseCategories];
-                }
-            }
-
-            this.saveStations();
-            this.saveRecords();
-            this.saveRecordTypes();
-            this.loadStations();
-            this.updateUI();
-            this.updateCategoryLists();
-            this.showAlert('数据导入成功');
-            this.hideModal();
-        } catch (error) {
-            alert('导入失败：文件格式不正确');
-            console.error(error);
-        }
-    },
- 100);
-    }
-    
-    this.showAlert('数据导出成功');
-},
-            
-            
+                };
+                reader.readAsText(file);
+            },
             
             clearData() {
                 if (!confirm('确定要清空所有数据吗？此操作不可恢复！')) return;
@@ -1941,7 +2034,7 @@
                     li.innerHTML = `
                         <span class="station-item-name">${station.name}</span>
                         <div class="station-actions">
-                            <button class="edit-btn" data-id="${station.id}">编辑</button>
+                            <button class="edit-btn touch-feedback" data-id="${station.id}">编辑</button>
                         </div>
                     `;
                     
@@ -1977,7 +2070,7 @@
                         li.innerHTML = `
                             <span>${category.name}</span>
                             <div class="category-actions">
-                                <button class="edit-btn" data-type="income" data-id="${category.id}">编辑</button>
+                                <button class="edit-btn touch-feedback" data-type="income" data-id="${category.id}">编辑</button>
                             </div>
                         `;
                         incomeListElement.appendChild(li);
@@ -1993,7 +2086,7 @@
                         li.innerHTML = `
                             <span>${category.name}</span>
                             <div class="category-actions">
-                                <button class="edit-btn" data-type="expense" data-id="${category.id}">编辑</button>
+                                <button class="edit-btn touch-feedback" data-type="expense" data-id="${category.id}">编辑</button>
                             </div>
                         `;
                         expenseListElement.appendChild(li);
@@ -2061,7 +2154,7 @@
                 this.saveRecordTypes();
                 this.updateCategoryLists();
                 this.initCategoryFilter();
-                this.showAlert('类型删除成功');
+                    this.showAlert('类型删除成功');
                 this.hideModal();
             },
             
@@ -2160,13 +2253,6 @@
                 const month = String(now.getMonth() + 1).padStart(2, '0');
                 const day = String(now.getDate()).padStart(2, '0');
                 const today = `${year}-${month}-${day}`;
-                
-                // 方法2：使用toLocaleDateString（备选）
-                // const today = now.toLocaleDateString('zh-CN', {
-                //     year: 'numeric',
-                //     month: '2-digit',
-                //     day: '2-digit'
-                // }).replace(/\//g, '-');
                 
                 document.getElementById('recordDate').value = today;
                 
@@ -2363,8 +2449,24 @@
             }
         };
         
-        document.addEventListener('DOMContentLoaded', () => {
-            App.init();
+        // 页面加载完成事件
+        document.addEventListener('DOMContentLoaded', function() {
+            // 显示加载指示器
+            document.getElementById('loading').style.display = 'flex';
+            
+            try {
+                // 初始化应用
+                App.init();
+                
+                // 隐藏加载指示器
+                setTimeout(function() {
+                    document.getElementById('loading').style.display = 'none';
+                }, 500);
+            } catch (e) {
+                console.error('初始化错误: ', e);
+                App.showAlert('初始化失败: ' + e.message);
+                document.getElementById('loading').style.display = 'none';
+            }
         });
     </script>
 </body>
